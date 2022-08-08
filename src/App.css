@@ -1,38 +1,217 @@
-.App {
-  text-align: center;
+/* App */
+
+.App__top {
+  background: #eee;
+  border-bottom: 1px solid #ddd;
+  padding: 1.25rem 1.5rem;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.App__main {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding: 1.5rem;
 }
 
-.App-link {
-  color: #61dafb;
+.App__left {
+  margin-right: 2rem;
+}
+.App__middle {
+  margin-right: 2rem;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Gradient */
+
+.Gradient {
+  display: flex;
+}
+
+.Track {
+  background-color: #eee;
+  width: 18px;
+  position: relative;
+  cursor: crosshair;
+  border: 1px solid transparent;
+}
+
+.Preview {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Point */
+
+.Point {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  left: -1px;
+  margin-top: -7px;
+  background-color: currentColor;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.Point::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  position: absolute;
+  top: 1px;
+  right: -6px;
+  transform: rotate(45deg);
+  background: currentColor;
+  border-top: 1px solid rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.Point.selected {
+  z-index: 1;
+}
+
+.Point.selected::before {
+  content: "";
+  background-color: white;
+  width: 6px;
+  height: 6px;
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  border-radius: 3px;
+  z-index: 1;
+}
+
+.Point.selected.light::before {
+  background-color: black;
+}
+
+/* Options */
+
+.Options {
+  display: flex;
+}
+.Options > div {
+  margin-right: 1.5rem;
+}
+.Options label {
+  display: block;
+}
+.Options input {
+  width: 4rem;
+}
+.Options input[type="range"] {
+  width: 200px;
+}
+.Options > div > * {
+  vertical-align: middle;
+}
+
+/* Picker */
+
+.Picker {
+  width: 256px;
+}
+
+.Picker__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+.Picker__infoLeft {
+  display: flex;
+  align-items: end;
+}
+.Picker__infoLeft input {
+  width: 2rem;
+}
+.Picker__swatch {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.Picker__rgb {
+  display: flex;
+}
+
+.Picker__rgb label {
+  display: block;
+}
+.Picker__rgb input {
+  width: 3rem;
+}
+
+/* HueStrip */
+
+.HueStrip {
+  position: relative;
+  margin: 0.75rem 0 0.25rem;
+  cursor: crosshair;
+}
+
+.HueStrip__selection {
+  position: absolute;
+  width: 0;
+  top: 0;
+  height: 15px;
+}
+
+.HueStrip__selection::before {
+  content: "";
+  width: 0;
+  height: 0;
+  top: -4px;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.8);
+  position: absolute;
+}
+
+.HueStrip__selection::after {
+  content: "";
+  width: 0;
+  height: 0;
+  bottom: -6px;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(0, 0, 0, 0.8);
+  position: absolute;
+}
+
+/* PickerSquare */
+
+.PickerSquare {
+  position: relative;
+  cursor: crosshair;
+}
+
+.PickerSquare canvas {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.PickerSquare__selection {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin-top: -6px;
+  margin-left: -6px;
+  border: 1px solid white;
+  border-radius: 6px;
+}
+
+.PickerSquare__selection.light {
+  border-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Detail */
+
+.Detail__info {
+  display: flex;
+  margin-bottom: 1rem;
+  justify-content: space-between;
+}
+
+.Detail__position input {
+  width: 3rem;
 }
