@@ -14,29 +14,9 @@
 .App__left {
   margin-right: 2rem;
 }
+
 .App__middle {
   margin-right: 2rem;
-}
-
-/* Options */
-
-.Options {
-  display: flex;
-}
-.Options > div {
-  margin-right: 1.5rem;
-}
-.Options label {
-  display: block;
-}
-.Options input {
-  width: 4rem;
-}
-.Options input[type="range"] {
-  width: 200px;
-}
-.Options > div > * {
-  vertical-align: middle;
 }
 
 /* Detail */

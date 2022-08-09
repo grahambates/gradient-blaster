@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import "./Gradient.css";
 import * as conv from "../lib/colorConvert";
 import Point from "./Point";
@@ -12,7 +12,7 @@ function Gradient({
   onMove,
   onSelect,
   onRemove,
-  gradient,
+  gradient
 }) {
   return (
     <div className="Gradient">
@@ -40,7 +40,7 @@ function Track({ height, children, onAdd }) {
     <div
       className="Track"
       style={{ height: height + "px" }}
-      onMouseDown={(e) => {
+      onMouseDown={e => {
         return onAdd(e.pageY - e.target.offsetTop);
       }}
     >

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import * as conv from "../lib/colorConvert";
 import "./Point.css";
 
@@ -10,25 +10,25 @@ function Point({
   onMove,
   onSelect,
   onRemove,
-  initialDrag,
+  initialDrag
 }) {
   const rgb = conv.quantize4Bit(conv.hsvToRgb(color));
 
-  const handleClick = (e) => {
+  const handleClick = e => {
     e.stopPropagation();
     onSelect(index);
     startDrag(e);
   };
 
   const startDrag = useCallback(
-    (e) => {
+    e => {
       let offsetY, offsetX;
       if (e) {
         offsetY = e.clientY - y;
         offsetX = e.clientX;
       }
 
-      const dragMove = (e) => {
+      const dragMove = e => {
         e.stopPropagation();
         if (offsetX === undefined) {
           offsetY = e.clientY - y;
@@ -77,7 +77,7 @@ function Point({
       className={classes.join(" ")}
       style={{
         top: y + "px",
-        color: conv.rgbCssProp(rgb),
+        color: conv.rgbCssProp(rgb)
       }}
       onMouseDown={handleClick}
     ></div>

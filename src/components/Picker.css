@@ -5,12 +5,12 @@
 .Picker__info {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   margin-bottom: 1rem;
 }
 .Picker__infoLeft {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 .Picker__infoLeft input {
   width: 2rem;

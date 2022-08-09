@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./Picker.css";
 import * as conv from "../lib/colorConvert";
 
@@ -7,7 +7,7 @@ function Picker({ hsv, onChange }) {
   const [r, g, b] = rgb4;
   const [hex, setHex] = useState(conv.rgb4ToHex(rgb4));
 
-  const setRgb4 = (newRgb4) => {
+  const setRgb4 = newRgb4 => {
     onChange(conv.rgbToHsv(conv.rgb4ToRgb8(newRgb4)));
   };
 
@@ -24,16 +24,14 @@ function Picker({ hsv, onChange }) {
           <div
             className="Picker__swatch"
             style={{
-              background: conv.rgbCssProp(
-                conv.quantize4Bit(conv.hsvToRgb(hsv))
-              ),
+              background: conv.rgbCssProp(conv.quantize4Bit(conv.hsvToRgb(hsv)))
             }}
           />
           <label htmlFor="Picker-hex">#</label>
           <input
             id="Picker-hex"
             value={hex}
-            onChange={(e) => {
+            onChange={e => {
               const newHex = e.target.value;
               setHex(newHex);
               if (newHex.match(/^[0-9a-f]{3}$/i)) {
@@ -52,7 +50,7 @@ function Picker({ hsv, onChange }) {
               type="number"
               min={0}
               max={15}
-              onChange={(e) => setRgb4([parseInt(e.target.value), g, b])}
+              onChange={e => setRgb4([parseInt(e.target.value), g, b])}
             />
           </div>
           <div>
@@ -63,7 +61,7 @@ function Picker({ hsv, onChange }) {
               type="number"
               min={0}
               max={15}
-              onChange={(e) => setRgb4([r, parseInt(e.target.value), b])}
+              onChange={e => setRgb4([r, parseInt(e.target.value), b])}
             />
           </div>
           <div>
@@ -74,7 +72,7 @@ function Picker({ hsv, onChange }) {
               type="number"
               min={0}
               max={15}
-              onChange={(e) => setRgb4([r, g, parseInt(e.target.value)])}
+              onChange={e => setRgb4([r, g, parseInt(e.target.value)])}
             />
           </div>
         </div>
@@ -114,11 +112,11 @@ function PickerSquare({ hsv, onChange }) {
   }, [h]);
 
   const handleMouseDown = useCallback(
-    (e) => {
+    e => {
       const maxX = width - 1;
       const maxY = height - 1;
 
-      const dragMove = (e) => {
+      const dragMove = e => {
         e.stopPropagation();
         const y = e.pageY - canvasRef.current.offsetParent.offsetTop;
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
@@ -183,10 +181,10 @@ function HueStrip({ hsv, onChange }) {
   }, []);
 
   const handleMouseDown = useCallback(
-    (e) => {
+    e => {
       const maxX = width - 1;
 
-      const dragMove = (e) => {
+      const dragMove = e => {
         e.stopPropagation();
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
         const h1 = conv.clamp(x / maxX);

@@ -1,26 +1,19 @@
+import React, { useCallback, useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+
 import "./App.css";
-import { useCallback, useEffect, useState } from "react";
 import { buildGradient } from "../lib/gradient";
 import * as conv from "../lib/colorConvert";
+import { addPoint, removePoint, setPos, setColor } from "../store/points";
 import Picker from "./Picker";
 import Gradient from "./Gradient";
-
-// Assign unique IDs to points
-let id = 0;
-const pointId = () => id++;
-
-const initialPoints = [
-  { id: pointId(), pos: 0, color: conv.rgbToHsv([255, 255, 0]) },
-  { id: pointId(), pos: 1, color: conv.rgbToHsv([0, 0, 255]) },
-];
+import Options from "./Options";
 
 function App() {
-  const [steps, setSteps] = useState(256);
-  const [scale, setScale] = useState(2);
-  const [blendMode, setBlendMode] = useState("perceptual");
-  const [ditherMode, setDitherMode] = useState("blueNoise");
-  const [ditherAmount, setDitherAmount] = useState(50);
-  const [points, setPoints] = useState(initialPoints);
+  const dispatch = useDispatch();
+  const options = useSelector(state => state.options);
+  const points = useSelector(state => state.points);
+  const { steps, scale, blendMode, ditherMode, ditherAmount } = options;
 
   const [selected, setSelected] = useState(0);
   const [gradient, setGradient] = useState();
@@ -32,61 +25,50 @@ function App() {
     (index, newY) => {
       const maxY = height - scale;
       const pos = Math.min(Math.max(newY, 0), maxY) / maxY;
-      setPoints((points) => {
-        const newPoints = [...points];
-        newPoints[index] = {
-          ...points[index],
-          pos,
-        };
-        return newPoints;
-      });
+      dispatch(setPos({ index, pos }));
     },
-    [height, scale]
+    [height, scale, dispatch]
   );
 
   const handleColorChange = useCallback(
-    (color) => {
-      setPoints((points) => {
-        const newPoints = [...points];
-        newPoints[selected] = {
-          ...points[selected],
-          color,
-        };
-        return newPoints;
-      });
-    },
-    [selected]
+    color => dispatch(setColor({ index: selected, color })),
+    [selected, dispatch]
   );
 
-  const handleRemove = useCallback((index) => {
-    setPoints((points) => {
-      const newPoints = [...points];
-      newPoints.splice(index, 1);
-      return newPoints;
-    });
-    setSelected(Math.max(index - 1, 0));
-  }, []);
+  const handleRemove = useCallback(
+    index => {
+      dispatch(removePoint(index));
+      setSelected(Math.max(index - 1, 0));
+    },
+    [dispatch]
+  );
 
   const handleAdd = useCallback(
-    (y) => {
-      setPoints((points) => {
-        const scaledY = Math.round(y / scale);
-        const gradient = buildGradient(points, steps, blendMode);
-        const sample = gradient[scaledY];
-        const newPoint = {
-          id: pointId(),
-          pos: y / (height - 1),
-          initialDrag: true,
-          color: conv.rgbToHsv(conv.rgb4ToRgb8(sample)),
-        };
-
-        const newPoints = [...points, newPoint].sort((a, b) => a.pos - b.pos);
-        setSelected(newPoints.findIndex((p) => p === newPoint));
-        return newPoints;
-      });
+    y => {
+      const scaledY = Math.round(y / scale);
+      const sample = gradient[scaledY];
+      const newPoint = {
+        pos: y / (height - 1),
+        color: conv.rgbToHsv(conv.rgb4ToRgb8(sample))
+      };
+      dispatch(addPoint(newPoint));
     },
-    [scale, steps, blendMode, height]
+    [scale, height, gradient, dispatch]
   );
+
+  // Select newest when added
+  const [count, setCount] = useState(points.length);
+  useEffect(() => {
+    const newCount = points.length;
+    if (newCount > count) {
+      const newestId = Math.max(...points.map(p => p.id));
+      const newestIndex = points.findIndex(p => p.id === newestId);
+      setSelected(newestIndex);
+    }
+    if (newCount !== count) {
+      setCount(newCount);
+    }
+  }, [points, count]);
 
   useEffect(() => {
     const newGradient = buildGradient(
@@ -102,86 +84,7 @@ function App() {
   return (
     <div className="App">
       <div className="App__top">
-        <div className="Options">
-          <div>
-            <label htmlFor="steps">Steps: </label>
-            <input
-              id="steps"
-              type="number"
-              min={0}
-              max={2000}
-              value={steps}
-              onChange={(e) => setSteps(parseInt(e.target.value))}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="steps">Preview scale: </label>
-            <input
-              id="scale"
-              type="number"
-              min={1}
-              max={20}
-              value={scale}
-              onChange={(e) => setScale(parseInt(e.target.value))}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="blendMode">Blend mode: </label>
-            <select
-              id="blendMode"
-              value={blendMode}
-              onChange={(e) => setBlendMode(e.target.value)}
-            >
-              <option value="perceptual">Perceptual</option>
-              <option value="lab">LAB</option>
-              <option value="linear">Linear RGB</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="ditherMode">Dither mode: </label>
-            <select
-              id="ditherMode"
-              value={ditherMode}
-              onChange={(e) => setDitherMode(e.target.value)}
-            >
-              <option value="off">Off</option>
-              <option value="shuffle">Shuffle</option>
-              <option value="errorDiffusion">Error diffusion</option>
-              <option value="blueNoise">Blue noise</option>
-              <option value="blueNoiseMono">Blue noise mono</option>
-              <option value="goldenRatio">Golden ratio</option>
-              <option value="goldenRatioMono">Golden ratio mono</option>
-              <option value="whiteNoise">White noise</option>
-              <option value="whiteNoiseMono">White noise mono</option>
-              <option value="ordered">Ordered</option>
-              <option value="orderedMono">Ordered mono</option>
-            </select>
-          </div>
-
-          {!["off", "shuffle"].includes(ditherMode) && (
-            <div>
-              <label htmlFor="ditherAmount">Dither amount: </label>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={ditherAmount}
-                onChange={(e) => setDitherAmount(parseInt(e.target.value))}
-              />
-              <input
-                id="ditherAmount"
-                type="number"
-                min={0}
-                max={100}
-                value={ditherAmount}
-                onChange={(e) => setDitherAmount(parseInt(e.target.value))}
-              />
-            </div>
-          )}
-        </div>
+        <Options />
       </div>
 
       <div className="App__main">
@@ -212,9 +115,7 @@ function App() {
                     min={0}
                     max={steps - 1}
                     value={Math.round(activePoint.pos * (steps - 1))}
-                    onChange={(e) =>
-                      handleMove(selected, e.target.value * scale)
-                    }
+                    onChange={e => handleMove(selected, e.target.value * scale)}
                   />
                 </div>
                 <button type="button" onClick={() => handleRemove(selected)}>
@@ -252,7 +153,7 @@ function Output({ gradient }) {
   return (
     <pre>
       {JSON.stringify(
-        gradient.map((n) => conv.rgb4ToHex(n)),
+        gradient.map(n => conv.rgb4ToHex(n)),
         null,
         2
       )}
