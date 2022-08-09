@@ -1,0 +1,15 @@
+.Gradient {
+  display: flex;
+}
+
+.Track {
+  background-color: #eee;
+  width: 18px;
+  position: relative;
+  cursor: crosshair;
+  border: 1px solid transparent;
+}
+
+.Preview {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}

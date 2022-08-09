@@ -1,0 +1,98 @@
+.Picker {
+  width: 256px;
+}
+
+.Picker__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+.Picker__infoLeft {
+  display: flex;
+  align-items: end;
+}
+.Picker__infoLeft input {
+  width: 2rem;
+}
+.Picker__swatch {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.Picker__rgb {
+  display: flex;
+}
+
+.Picker__rgb label {
+  display: block;
+}
+.Picker__rgb input {
+  width: 3rem;
+}
+
+/* HueStrip */
+
+.HueStrip {
+  position: relative;
+  margin: 0.75rem 0 0.25rem;
+  cursor: crosshair;
+}
+
+.HueStrip__selection {
+  position: absolute;
+  width: 0;
+  top: 0;
+  height: 15px;
+}
+
+.HueStrip__selection::before {
+  content: "";
+  width: 0;
+  height: 0;
+  top: -4px;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.8);
+  position: absolute;
+}
+
+.HueStrip__selection::after {
+  content: "";
+  width: 0;
+  height: 0;
+  bottom: -6px;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(0, 0, 0, 0.8);
+  position: absolute;
+}
+
+/* PickerSquare */
+
+.PickerSquare {
+  position: relative;
+  cursor: crosshair;
+}
+
+.PickerSquare canvas {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.PickerSquare__selection {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin-top: -6px;
+  margin-left: -6px;
+  border: 1px solid white;
+  border-radius: 6px;
+}
+
+.PickerSquare__selection.light {
+  border-color: rgba(0, 0, 0, 0.8);
+}
