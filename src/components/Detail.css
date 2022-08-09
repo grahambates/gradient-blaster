@@ -1,0 +1,9 @@
+.Detail__info {
+  display: flex;
+  margin-bottom: 1rem;
+  justify-content: space-between;
+}
+
+.Detail__position input {
+  width: 3rem;
+}
