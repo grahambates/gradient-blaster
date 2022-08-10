@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import "./Gradient.css";
 import * as conv from "../lib/colorConvert";
 import Point from "./Point";
@@ -24,41 +24,35 @@ function Gradient() {
   const { steps, scale } = options;
   const height = steps * scale;
 
-  const handleAdd = useCallback(
-    y => {
-      const scaledY = Math.round(y / scale);
-      const sample = gradient[scaledY];
-      const newPoint = {
+  const handleAdd = y => {
+    const scaledY = Math.round(y / scale);
+    const sample = gradient[scaledY];
+    dispatch(
+      addPoint({
         pos: y / (height - 1),
         color: conv.rgbToHsv(conv.rgb4ToRgb8(sample))
-      };
-      dispatch(addPoint(newPoint));
-    },
-    [scale, height, gradient, dispatch]
-  );
+      })
+    );
+  };
 
-  const handleMove = useCallback(
-    (index, newY) => {
-      const maxY = steps * scale - scale;
-      const pos = Math.min(Math.max(newY, 0), maxY) / maxY;
-      dispatch(setPos({ index, pos }));
-    },
-    [steps, scale, dispatch]
-  );
+  const handleMove = newY => {
+    const maxY = steps * scale - scale;
+    const pos = conv.clamp(newY, 0, maxY) / maxY;
+    dispatch(setPos(pos));
+  };
 
   return (
     <div className="Gradient">
       <Track height={height} onAdd={handleAdd}>
         {points.map((p, i) => (
           <Point
-            index={i}
             key={p.id}
             {...p}
             y={p.pos * height}
             selected={i === selected}
             onMove={handleMove}
-            onSelect={i => dispatch(selectIndex(i))}
-            onRemove={i => dispatch(removePoint(i))}
+            onSelect={() => dispatch(selectIndex(i))}
+            onRemove={() => dispatch(removePoint())}
           />
         ))}
       </Track>
@@ -72,9 +66,7 @@ function Track({ height, children, onAdd }) {
     <div
       className="Track"
       style={{ height: height + "px" }}
-      onMouseDown={e => {
-        return onAdd(e.pageY - e.target.offsetTop);
-      }}
+      onMouseDown={e => onAdd(e.pageY - e.target.offsetTop)}
     >
       {children}
     </div>

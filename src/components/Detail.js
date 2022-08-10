@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 import "./Detail.css";
@@ -14,6 +14,7 @@ import {
 import { selectOptions } from "../store/options";
 
 import Picker from "./Picker";
+import { clamp } from "../lib/colorConvert";
 
 function Detail() {
   const dispatch = useDispatch();
@@ -23,14 +24,11 @@ function Detail() {
 
   const selectedPoint = points[selectedIndex];
 
-  const handleMove = useCallback(
-    (index, newY) => {
-      const maxY = steps - 1;
-      const pos = Math.min(Math.max(newY, 0), maxY) / maxY;
-      dispatch(setPos({ index, pos }));
-    },
-    [steps, dispatch]
-  );
+  const handleMove = newY => {
+    const maxY = steps - 1;
+    const pos = clamp(newY, 0, maxY) / maxY;
+    dispatch(setPos(pos));
+  };
 
   return (
     <div className="Detail">
@@ -58,19 +56,16 @@ function Detail() {
             min={0}
             max={steps - 1}
             value={Math.round(selectedPoint.pos * (steps - 1))}
-            onChange={e => handleMove(selectedIndex, e.target.value)}
+            onChange={e => handleMove(e.target.value)}
           />
         </div>
-        <button
-          type="button"
-          onClick={() => dispatch(removePoint(selectedIndex))}
-        >
+        <button type="button" onClick={() => dispatch(removePoint())}>
           Remove
         </button>
       </div>
       <Picker
         hsv={selectedPoint.color}
-        onChange={color => dispatch(setColor({ index: selectedIndex, color }))}
+        onChange={color => dispatch(setColor(color))}
       />
     </div>
   );

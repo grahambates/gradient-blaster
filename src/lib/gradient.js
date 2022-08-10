@@ -2,13 +2,8 @@ import * as conv from "./colorConvert";
 
 const GOLDEN_RATIO = 1.61803399;
 
-export function buildGradient(
-  points,
-  steps,
-  blendMode,
-  ditherMode = "off",
-  ditherAmount = 0
-) {
+export function buildGradient(points, options) {
+  const { steps, blendMode, ditherMode, ditherAmount } = options;
   const mappedPoints = [...points].map((p) => ({
     color: conv.quantize4Bit(conv.hsvToRgb(p.color)),
     y: Math.round(p.pos * (steps - 1)),
@@ -19,7 +14,7 @@ export function buildGradient(
 
   for (let i = 0; i < steps; i++) {
     const current = mappedPoints[pointIndex];
-    const next = mappedPoints[pointIndex + 1];
+    let next = mappedPoints[pointIndex + 1];
 
     const firstPoint = current.y >= i;
     const lastPoint = !next;
@@ -28,9 +23,13 @@ export function buildGradient(
       // Use exact color value
       values.push(current.color);
     } else if (next.y === i) {
+      const col = next.color;
       // Reached next point
-      pointIndex++;
-      values.push(next.color);
+      while (next && next.y === i) {
+        pointIndex++;
+        next = mappedPoints[pointIndex + 1];
+      }
+      values.push(col);
     } else {
       // Mix intermediate step:
       const pos = (i - current.y) / (next.y - current.y);

@@ -27,17 +27,18 @@ export const pointsSlice = createSlice({
       state.items.sort((a, b) => a.pos - b.pos);
       state.selectedIndex = state.items.findIndex(p => p === newPoint);
     },
-    removePoint: (state, action) => {
-      state.items.splice(action.payload, 1);
-      state.selectedIndex = Math.max(action.payload - 1, 0);
+    removePoint: state => {
+      state.items.splice(state.selectedIndex, 1);
+      state.selectedIndex = Math.max(state.selectedIndex - 1, 0);
     },
     setPos: (state, action) => {
-      const { index, pos } = action.payload;
-      state.items[index].pos = pos;
+      const selected = state.items[state.selectedIndex];
+      selected.pos = action.payload;
+      state.items.sort((a, b) => a.pos - b.pos);
+      state.selectedIndex = state.items.findIndex(p => p === selected);
     },
     setColor: (state, action) => {
-      const { index, color } = action.payload;
-      state.items[index].color = color;
+      state.items[state.selectedIndex].color = action.payload;
     },
     selectIndex: (state, action) => {
       state.selectedIndex = action.payload;

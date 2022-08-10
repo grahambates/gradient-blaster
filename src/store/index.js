@@ -14,8 +14,7 @@ export const selectGradient = createSelector(
   selectPoints,
   selectOptions,
   (points, options) => {
-    const { steps, blendMode, ditherMode, ditherAmount } = options;
-    return buildGradient(points, steps, blendMode, ditherMode, ditherAmount);
+    return buildGradient(points, options);
   }
 );
 

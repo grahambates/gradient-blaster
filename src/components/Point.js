@@ -3,7 +3,6 @@ import * as conv from "../lib/colorConvert";
 import "./Point.css";
 
 function Point({
-  index,
   y,
   color,
   selected,
@@ -16,7 +15,7 @@ function Point({
 
   const handleClick = e => {
     e.stopPropagation();
-    onSelect(index);
+    onSelect();
     startDrag(e);
   };
 
@@ -35,10 +34,10 @@ function Point({
           offsetX = e.clientX;
         }
         if (Math.abs(e.clientX - offsetX) > 30) {
-          onRemove(index);
+          onRemove();
           dragStop();
         } else {
-          onMove(index, e.clientY - offsetY);
+          onMove(e.clientY - offsetY);
         }
       };
 
@@ -52,7 +51,7 @@ function Point({
 
       return dragStop;
     },
-    [index, onMove, onRemove, y]
+    [onMove, onRemove, y]
   );
 
   // Allow point to start in dragging state when added
