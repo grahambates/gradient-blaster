@@ -53,10 +53,13 @@ export function rgbToHsv([r, g, b]) {
     h /= 6;
   }
 
-  return [h, s, v];
+  return [h * 255, s * 255, v * 255].map(Math.round);
 }
 
 export function hsvToRgb([h, s, v]) {
+  h /= 255;
+  s /= 255;
+  v /= 255;
   let r, g, b;
 
   const i = Math.floor(h * 6);
@@ -99,7 +102,7 @@ export function hsvToRgb([h, s, v]) {
     default:
   }
 
-  return [r * 255, g * 255, b * 255];
+  return [r * 255, g * 255, b * 255].map(Math.round);
 }
 
 export function labToRgb(lab) {

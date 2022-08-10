@@ -95,8 +95,8 @@ function PickerSquare({ hsv, onChange }) {
     let i = 0;
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
-        const s1 = y / (height - 1);
-        const v1 = 1 - x / (width - 1);
+        const s1 = y;
+        const v1 = 255 - x;
         let color = conv.hsvToRgb([h, s1, v1]);
         color = conv.quantize4Bit(color);
         const [r, g, b] = color;
@@ -113,15 +113,12 @@ function PickerSquare({ hsv, onChange }) {
 
   const handleMouseDown = useCallback(
     e => {
-      const maxX = width - 1;
-      const maxY = height - 1;
-
       const dragMove = e => {
         e.stopPropagation();
         const y = e.pageY - canvasRef.current.offsetParent.offsetTop;
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
-        const s = conv.clamp(x / maxX);
-        const v = 1 - conv.clamp(y / maxY);
+        const s = conv.clamp(x, 0, 255);
+        const v = 255 - conv.clamp(y, 0, 255);
         onChange([h, s, v]);
       };
 
@@ -155,7 +152,7 @@ function PickerSquare({ hsv, onChange }) {
         onMouseDown={handleMouseDown}
       />
       <div
-        style={{ top: conv.fToPercent(1 - v), left: conv.fToPercent(s) }}
+        style={{ top: 255 - v + "px", left: s + "px" }}
         className={classes.join(" ")}
       />
     </div>
@@ -173,8 +170,8 @@ function HueStrip({ hsv, onChange }) {
     /** @type CanvasRenderingContext2D */
     const ctx = canvasRef.current.getContext("2d");
     for (let x = 0; x < width; x++) {
-      const hue = x / (width - 1);
-      const rgb = conv.hsvToRgb([hue, 1, 1]);
+      const hue = x;
+      const rgb = conv.hsvToRgb([hue, 255, 255]);
       ctx.fillStyle = conv.rgbCssProp(rgb);
       ctx.fillRect(x, 0, 1, height);
     }
@@ -187,7 +184,7 @@ function HueStrip({ hsv, onChange }) {
       const dragMove = e => {
         e.stopPropagation();
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
-        const h1 = conv.clamp(x / maxX);
+        const h1 = conv.clamp(x, 0, 255);
         onChange([h1, s, v]);
       };
 
@@ -212,10 +209,7 @@ function HueStrip({ hsv, onChange }) {
         height={height}
         onMouseDown={handleMouseDown}
       />
-      <div
-        style={{ left: conv.fToPercent(h) }}
-        className="HueStrip__selection"
-      />
+      <div style={{ left: h + "px" }} className="HueStrip__selection" />
     </div>
   );
 }
