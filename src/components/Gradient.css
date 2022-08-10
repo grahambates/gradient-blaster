@@ -6,7 +6,7 @@
   background-color: #eee;
   width: 18px;
   position: relative;
-  cursor: crosshair;
+  cursor: copy;
   border: 1px solid transparent;
 }
 

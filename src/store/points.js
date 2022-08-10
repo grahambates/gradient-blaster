@@ -20,7 +20,6 @@ export const pointsSlice = createSlice({
     addPoint: (state, action) => {
       const newPoint = {
         id: pointId(),
-        initialDrag: true,
         ...action.payload
       };
       state.items.push(newPoint);
@@ -28,8 +27,10 @@ export const pointsSlice = createSlice({
       state.selectedIndex = state.items.findIndex(p => p === newPoint);
     },
     removePoint: state => {
-      state.items.splice(state.selectedIndex, 1);
-      state.selectedIndex = Math.max(state.selectedIndex - 1, 0);
+      if (state.items.length > 2) {
+        state.items.splice(state.selectedIndex, 1);
+        state.selectedIndex = Math.max(state.selectedIndex - 1, 0);
+      }
     },
     setPos: (state, action) => {
       const selected = state.items[state.selectedIndex];

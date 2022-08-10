@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./Gradient.css";
 import * as conv from "../lib/colorConvert";
 import Point from "./Point";
@@ -24,9 +24,21 @@ function Gradient() {
   const { steps, scale } = options;
   const height = steps * scale;
 
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleAdd = y => {
     const scaledY = Math.round(y / scale);
     const sample = gradient[scaledY];
+
+    // Start new point in dragging state as mouse is currently down
+    setIsDragging(true);
+    // Cancel drag on mouse up
+    const stopDrag = () => {
+      setIsDragging(false);
+      window.removeEventListener("mouseup", stopDrag);
+    };
+    window.addEventListener("mouseup", stopDrag);
+
     dispatch(
       addPoint({
         pos: y / (height - 1),
@@ -48,6 +60,7 @@ function Gradient() {
           <Point
             key={p.id}
             {...p}
+            initialDrag={i === selected && isDragging}
             y={p.pos * height}
             selected={i === selected}
             onMove={handleMove}
@@ -66,7 +79,10 @@ function Track({ height, children, onAdd }) {
     <div
       className="Track"
       style={{ height: height + "px" }}
-      onMouseDown={e => onAdd(e.pageY - e.target.offsetTop)}
+      onMouseDown={e => {
+        e.preventDefault();
+        onAdd(e.pageY - e.target.offsetTop);
+      }}
     >
       {children}
     </div>

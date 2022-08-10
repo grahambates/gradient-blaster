@@ -59,7 +59,11 @@ function Detail() {
             onChange={e => handleMove(e.target.value)}
           />
         </div>
-        <button type="button" onClick={() => dispatch(removePoint())}>
+        <button
+          type="button"
+          disabled={points.length < 3}
+          onClick={() => dispatch(removePoint())}
+        >
           Remove
         </button>
       </div>

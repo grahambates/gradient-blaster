@@ -5,7 +5,7 @@
   left: -1px;
   margin-top: -7px;
   background-color: currentColor;
-  cursor: pointer;
+  cursor: grab;
   border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
@@ -25,6 +25,9 @@
 .Point.selected {
   z-index: 1;
 }
+.Point.removing {
+  opacity: 0.25;
+}
 
 .Point.selected::before {
   content: "";
@@ -40,4 +43,12 @@
 
 .Point.selected.light::before {
   background-color: black;
+}
+
+body.dragging * {
+  cursor: grabbing;
+}
+
+body.removing * {
+  cursor: no-drop !important;
 }

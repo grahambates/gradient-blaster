@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import * as conv from "../lib/colorConvert";
 import "./Point.css";
+
+const REMOVE_THRESHOLD = 30;
 
 function Point({
   y,
@@ -13,59 +15,68 @@ function Point({
 }) {
   const rgb = conv.quantize4Bit(conv.hsvToRgb(color));
 
+  const [isDragging, setIsDragging] = useState(initialDrag);
+  const [isRemoving, setIsRemoving] = useState(false);
+
   const handleClick = e => {
     e.stopPropagation();
     onSelect();
-    startDrag(e);
+    setIsDragging(true);
   };
 
-  const startDrag = useCallback(
-    e => {
-      let offsetY, offsetX;
-      if (e) {
+  const startDrag = () => {
+    let offsetY, offsetX;
+    let isRemoving;
+    document.body.classList.add("dragging");
+
+    const dragMove = e => {
+      e.stopPropagation();
+      if (offsetX === undefined) {
         offsetY = e.clientY - y;
         offsetX = e.clientX;
       }
 
-      const dragMove = e => {
-        e.stopPropagation();
-        if (offsetX === undefined) {
-          offsetY = e.clientY - y;
-          offsetX = e.clientX;
-        }
-        if (Math.abs(e.clientX - offsetX) > 30) {
-          onRemove();
-          dragStop();
-        } else {
-          onMove(e.clientY - offsetY);
-        }
-      };
+      // Indicate that point will be removed on mouseUp if dragged far outside of track region
+      isRemoving = Math.abs(e.clientX - offsetX) > REMOVE_THRESHOLD;
+      setIsRemoving(isRemoving);
+      if (isRemoving) {
+        document.body.classList.add("removing");
+      } else {
+        document.body.classList.remove("removing");
+        onMove(e.clientY - offsetY);
+      }
+    };
 
-      const dragStop = () => {
-        document.removeEventListener("mousemove", dragMove);
-        document.removeEventListener("mouseup", dragStop);
-      };
+    const dragStop = () => {
+      document.removeEventListener("mousemove", dragMove);
+      document.removeEventListener("mouseup", dragStop);
+      document.body.classList.remove("dragging");
+      document.body.classList.remove("removing");
+      if (isRemoving) {
+        onRemove();
+      }
+      // Might not actually be removed if <= 2 points
+      // need to reset state regardless
+      setIsRemoving(false);
+      setIsDragging(false);
+    };
 
-      document.addEventListener("mousemove", dragMove);
-      document.addEventListener("mouseup", dragStop);
+    document.addEventListener("mousemove", dragMove);
+    document.addEventListener("mouseup", dragStop);
+  };
 
-      return dragStop;
-    },
-    [onMove, onRemove, y]
-  );
-
-  // Allow point to start in dragging state when added
   useEffect(() => {
-    if (initialDrag) {
-      return startDrag();
-    }
+    if (isDragging) startDrag();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isDragging]);
 
   // Build class list:
   const classes = ["Point"];
   if (selected) {
     classes.push("selected");
+  }
+  if (isRemoving) {
+    classes.push("removing");
   }
   if (conv.luminance(rgb) > 128) {
     classes.push("light");
