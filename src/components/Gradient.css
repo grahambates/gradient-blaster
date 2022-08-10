@@ -2,7 +2,7 @@
   display: flex;
 }
 
-.Track {
+.Gradient__track {
   background-color: #eee;
   width: 18px;
   position: relative;
@@ -10,6 +10,6 @@
   border: 1px solid transparent;
 }
 
-.Preview {
+.Gradient__canvas {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }

@@ -55,7 +55,14 @@ function Gradient() {
 
   return (
     <div className="Gradient">
-      <Track height={height} onAdd={handleAdd}>
+      <div
+        className="Gradient__track"
+        style={{ height: height + "px" }}
+        onMouseDown={e => {
+          e.preventDefault();
+          handleAdd(e.pageY - e.target.offsetTop);
+        }}
+      >
         {points.map((p, i) => (
           <Point
             key={p.id}
@@ -68,28 +75,13 @@ function Gradient() {
             onRemove={() => dispatch(removePoint())}
           />
         ))}
-      </Track>
-      <Preview gradient={gradient} scale={scale} />
+      </div>
+      <Canvas gradient={gradient} scale={scale} />
     </div>
   );
 }
 
-function Track({ height, children, onAdd }) {
-  return (
-    <div
-      className="Track"
-      style={{ height: height + "px" }}
-      onMouseDown={e => {
-        e.preventDefault();
-        onAdd(e.pageY - e.target.offsetTop);
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function Preview({ gradient, scale }) {
+function Canvas({ gradient, scale }) {
   const width = 512;
   const canvasRef = useRef(null);
   const steps = gradient.length;
@@ -106,7 +98,7 @@ function Preview({ gradient, scale }) {
 
   return (
     <canvas
-      className="Preview"
+      className="Gradient__canvas"
       ref={canvasRef}
       width={width}
       height={steps * scale}

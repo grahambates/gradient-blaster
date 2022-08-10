@@ -23,3 +23,6 @@
   margin-right: 2rem;
 }
 
+.App__right{
+  flex-grow: 1;
+}
