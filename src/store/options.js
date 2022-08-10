@@ -38,6 +38,6 @@ export const {
   setDitherAmount
 } = configSlice.actions;
 
-export const selectOptions = state => state.options;
+export const selectOptions = state => state.data.present.options;
 
 export default configSlice.reducer;

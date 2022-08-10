@@ -62,7 +62,8 @@ export const {
   nextPoint
 } = pointsSlice.actions;
 
-export const selectPoints = state => state.points.items;
-export const selectSelectedIndex = state => state.points.selectedIndex;
+export const selectPoints = state => state.data.present.points.items;
+export const selectSelectedIndex = state =>
+  state.data.present.points.selectedIndex;
 
 export default pointsSlice.reducer;

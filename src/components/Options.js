@@ -7,12 +7,13 @@ import {
   setSteps,
   setBlendMode,
   setDitherMode,
-  setDitherAmount
+  setDitherAmount,
+  selectOptions
 } from "../store/options";
 
 function Options() {
   const dispatch = useDispatch();
-  const options = useSelector(state => state.options);
+  const options = useSelector(selectOptions);
   const { steps, scale, blendMode, ditherMode, ditherAmount } = options;
 
   return (
@@ -38,7 +39,8 @@ function Options() {
           max={20}
           value={scale}
           onChange={e => dispatch(setScale(parseInt(e.target.value)))}
-        />
+        />{" "}
+        x
       </div>
 
       <div>
@@ -80,6 +82,7 @@ function Options() {
           <label htmlFor="ditherAmount">Dither amount: </label>
           <input
             type="range"
+            className="Options__ditherAmountRange"
             min={0}
             max={100}
             value={ditherAmount}
@@ -87,12 +90,14 @@ function Options() {
           />
           <input
             id="ditherAmount"
+            className="Options__ditherAmount"
             type="number"
             min={0}
             max={100}
             value={ditherAmount}
             onChange={e => dispatch(setDitherAmount(parseInt(e.target.value)))}
-          />
+          />{" "}
+          %
         </div>
       )}
     </div>

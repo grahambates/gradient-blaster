@@ -4,6 +4,10 @@
   background: #eee;
   border-bottom: 1px solid #ddd;
   padding: 1.25rem 1.5rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 
 .App__main {

@@ -10,9 +10,10 @@
 .Options input {
   width: 4rem;
 }
-.Options input[type="range"] {
+input.Options__ditherAmountRange {
   width: 200px;
-}
-.Options > div > * {
   vertical-align: middle;
+}
+input.Options__ditherAmount {
+  width: 3rem;
 }
