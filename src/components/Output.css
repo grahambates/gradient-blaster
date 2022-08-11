@@ -7,14 +7,3 @@
 .Output__header {
   margin-bottom: 0.75rem;
 }
-
-.Output__code {
-  background: #333;
-  color: #fff;
-  margin: 0;
-  padding: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  border: none;
-  flex-grow: 1;
-}

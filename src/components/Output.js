@@ -1,11 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
+import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import asmatmel from "react-syntax-highlighter/dist/esm/languages/prism/asmatmel";
 
 import "./Output.css";
 import * as conv from "../lib/colorConvert";
 import { selectGradient, selectPresentData } from "../store";
 import { encodeUrlQuery } from "../lib/url";
+
+SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
 
 const formatData = (values, { rowSize = 16 }) => {
   let output = "";
@@ -34,36 +39,32 @@ const selectPaletteDataHref = createSelector(
 );
 
 function Output() {
-  const paletteData = useSelector(selectPaletteData);
-  const paletteDataHref = useSelector(selectPaletteDataHref);
+  const code = useSelector(selectPaletteData);
+  const codeHref = useSelector(selectPaletteDataHref);
   const query = useSelector(selectUrl);
 
   useEffect(() => {
     window.history.replaceState({}, null, window.location.pathname + query);
   }, [query]);
 
-  const codeRef = useRef(null);
-
-  const handleCopy = () => {
-    const copyText = codeRef.current;
-    copyText.select();
-    navigator.clipboard.writeText(copyText.value);
-  };
-
   return (
     <div className="Output">
       <div className="Output__header">
-        <button onClick={handleCopy}>Copy to clipboard</button>{" "}
-        <a href={paletteDataHref} download="gradient.s">
+        <button onClick={() => navigator.clipboard.writeText(code)}>
+          Copy to clipboard
+        </button>{" "}
+        <a href={codeHref} download="gradient.s">
           Download source
         </a>
       </div>
-      <textarea
-        ref={codeRef}
-        className="Output__code"
-        value={paletteData}
-        onFocus={e => e.target.select()}
-      />
+      <SyntaxHighlighter
+        language="asmatmel"
+        style={a11yDark}
+        wrapLines
+        wrapLongLines
+      >
+        {code}
+      </SyntaxHighlighter>
     </div>
   );
 }
