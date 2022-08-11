@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
 
@@ -16,27 +16,54 @@ const formatData = (values, { rowSize = 16 }) => {
   return output.substring(1);
 };
 
-const selectPaletteData = createSelector(selectGradient, gradient =>
-  formatData(gradient, { rowSize: 8 })
-);
+const baseUrl = window.location.href.split("?")[0];
 
 const selectUrl = createSelector(selectPresentData, encodeUrlQuery);
 
-const baseUrl = window.location.href.split("?")[0];
+const selectPaletteData = createSelector(
+  selectGradient,
+  selectUrl,
+  (gradient, query) => {
+    const formatted = formatData(gradient, { rowSize: 8 });
+    return "; " + baseUrl + query + "\n" + formatted;
+  }
+);
+const selectPaletteDataHref = createSelector(
+  selectPaletteData,
+  output => "data:text/plain;charset=utf-8," + encodeURIComponent(output)
+);
 
 function Output() {
   const paletteData = useSelector(selectPaletteData);
+  const paletteDataHref = useSelector(selectPaletteDataHref);
   const query = useSelector(selectUrl);
 
   useEffect(() => {
     window.history.replaceState({}, null, window.location.pathname + query);
   }, [query]);
 
+  const codeRef = useRef(null);
+
+  const handleCopy = () => {
+    const copyText = codeRef.current;
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+  };
+
   return (
     <div className="Output">
-      <pre className="Output__pre">
-        ; {baseUrl + query + "\n" + paletteData}
-      </pre>
+      <div className="Output__header">
+        <button onClick={handleCopy}>Copy to clipboard</button>{" "}
+        <a href={paletteDataHref} download="gradient.s">
+          Download source
+        </a>
+      </div>
+      <textarea
+        ref={codeRef}
+        className="Output__code"
+        value={paletteData}
+        onFocus={e => e.target.select()}
+      />
     </div>
   );
 }

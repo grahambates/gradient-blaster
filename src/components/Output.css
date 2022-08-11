@@ -1,15 +1,20 @@
 .Output {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.Output__pre {
+.Output__header {
+  margin-bottom: 0.75rem;
+}
+
+.Output__code {
   background: #333;
   color: #fff;
   margin: 0;
   padding: 1rem;
-  overflow: scroll;
   width: 100%;
-  height: 100%;
-  white-space: pre-wrap;
   box-sizing: border-box;
+  border: none;
+  flex-grow: 1;
 }
