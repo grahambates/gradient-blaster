@@ -1,9 +1,16 @@
 .Output {
-  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .Output__header {
   margin-bottom: 0.75rem;
+}
+
+.Output pre {
+  height: 350px;
+  font-size: 0.9em;
+}
+.Output code {
+  word-break: break-word !important;
 }

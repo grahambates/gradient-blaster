@@ -1,8 +1,8 @@
 /* App */
 
 .App__top {
-  background: #eee;
-  border-bottom: 1px solid #ddd;
+  background: rgb(43, 43, 43);
+  color: white;
   padding: 1.25rem 1.5rem;
 
   display: flex;
