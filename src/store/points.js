@@ -4,7 +4,6 @@ import { decodeUrlQuery } from "../lib/url";
 
 const urlState = decodeUrlQuery(window.location.search);
 
-console.log(urlState);
 // Assign unique IDs to points
 let id = 0;
 const nextId = () => id++;

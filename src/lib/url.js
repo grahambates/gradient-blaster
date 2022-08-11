@@ -7,6 +7,7 @@ export const encodeUrlQuery = ({ points, options }) =>
   )}`;
 
 export const decodeUrlQuery = (query) => {
+  if (!query) return {};
   const { points, steps, scale, blendMode, ditherMode, ditherAmount } =
     qs.parse(query.substring(1));
   return {

@@ -1,8 +1,15 @@
 .Output {
+  height: 100%;
+}
+
+.Output__pre {
   background: #333;
   color: #fff;
   margin: 0;
   padding: 1rem;
   overflow: scroll;
-  width: 500px
+  width: 100%;
+  height: 100%;
+  white-space: pre-wrap;
+  box-sizing: border-box;
 }
