@@ -8,7 +8,7 @@
 .Picker__swatchesRow {
   display: flex;
   justify-content: space-between;
-  margin: 3px 0;
+  margin: 4px 0;
 }
 .Picker__swatch {
   width: 18px;
@@ -21,7 +21,7 @@
 
 .HueStrip {
   position: relative;
-  margin: 0.75rem 0 0.25rem;
+  margin: 1.5rem 0;
   cursor: crosshair;
 }
 

@@ -15,12 +15,8 @@
   padding: 1.5rem;
 }
 
-.App__left {
-  margin-right: 2rem;
-}
-
 .App__middle {
-  margin-right: 2rem;
+  margin: 0 2rem;
 }
 
 .App__right{

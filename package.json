@@ -1,7 +1,13 @@
 {
-  "name": "gradients",
+  "name": "gradient-blaster",
+  "description": "Amiga OCS/ECS Gradient builder tool",
   "version": "0.1.0",
-  "private": true,
+  "author": "Graham Bates",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grahambates/gradient-blaster"
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.3",
     "@testing-library/jest-dom": "^5.16.4",

@@ -1,6 +1,6 @@
 .Detail__info {
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   justify-content: space-between;
 }
 
@@ -10,7 +10,7 @@
 
 .Detail__header {
   background: #ccc;
-  padding: 10px 16px;
+  padding: 12px 18px;
   border-radius: 10px 10px 0 0;
   display: flex;
   justify-content: space-between;
@@ -18,7 +18,7 @@
 
 .Detail__body {
   background: #eee;
-  padding: 16px;
+  padding: 18px;
   border-radius: 0 0 10px 10px;
 }
 
