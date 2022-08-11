@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -11,6 +11,8 @@ import { selectGradient, selectPresentData } from "../store";
 import { encodeUrlQuery } from "../lib/url";
 
 SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
+
+const DEBOUNCE_DELAY = 100;
 
 const formatData = (values, { rowSize = 16 }) => {
   let output = "";
@@ -38,6 +40,8 @@ const selectPaletteDataHref = createSelector(
   output => "data:text/plain;charset=utf-8," + encodeURIComponent(output)
 );
 
+let timeout;
+
 function Output() {
   const code = useSelector(selectPaletteData);
   const codeHref = useSelector(selectPaletteDataHref);
@@ -46,6 +50,15 @@ function Output() {
   useEffect(() => {
     window.history.replaceState({}, null, window.location.pathname + query);
   }, [query]);
+
+  const [debouncedCode, setDebouncedCode] = useState(code);
+
+  useEffect(() => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      setDebouncedCode(code);
+    }, DEBOUNCE_DELAY);
+  }, [code, setDebouncedCode]);
 
   return (
     <div className="Output">
@@ -63,7 +76,7 @@ function Output() {
         wrapLines
         wrapLongLines
       >
-        {code}
+        {debouncedCode}
       </SyntaxHighlighter>
     </div>
   );
