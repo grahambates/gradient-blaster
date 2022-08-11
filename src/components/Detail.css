@@ -7,3 +7,21 @@
 .Detail__position input {
   width: 3rem;
 }
+
+.Detail__nav {
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.Detail__color {
+  display: flex;
+}
+.Detail__swatch {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+}
+.Detail__hexInput {
+  width: 2rem;
+}

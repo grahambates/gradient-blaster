@@ -2,28 +2,8 @@
   width: 256px;
 }
 
-.Picker__info {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 1rem;
-}
-.Picker__infoLeft {
-  display: flex;
-  align-items: flex-end;
-}
-.Picker__infoLeft input {
-  width: 2rem;
-}
-.Picker__current {
-  width: 20px;
-  height: 20px;
-  margin-right: 0.25rem;
-  border: 1px solid rgba(0, 0, 0, 0.5);
-}
-
 .Picker__swatches {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 .Picker__swatchesRow {
   display: flex;
@@ -35,16 +15,6 @@
   height: 18px;
   cursor: pointer;
   border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.Picker__rgb {
-  display: flex;
-}
-.Picker__rgb label {
-  display: block;
-}
-.Picker__rgb input {
-  width: 3rem;
 }
 
 /* HueStrip */
