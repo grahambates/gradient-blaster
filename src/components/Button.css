@@ -1,0 +1,51 @@
+.Button {
+  background: #eee;
+  border: 1px solid #ccc;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1;
+  height: 36px;
+  box-sizing: border-box;
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.Button:hover {
+  background: #ddd;
+  border-color: #bbb;
+}
+
+.Button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.Button > * {
+  vertical-align: middle;
+}
+
+.Button--iconLeft svg {
+  margin-right: 0.3rem;
+}
+
+.Button--iconRight svg {
+  margin-left: 0.3rem;
+}
+
+.Button--dark {
+  background: #444;
+  color: white;
+  border-color: #777;
+}
+
+.Button--dark:hover {
+  background: #555;
+  border-color: #bbb;
+}
+
+.Button--small {
+  font-size: 0.9rem;
+  height: auto;
+  padding: 0.25rem 0.25rem;
+}

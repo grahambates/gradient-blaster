@@ -4,11 +4,13 @@ import { createSelector } from "@reduxjs/toolkit";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import asmatmel from "react-syntax-highlighter/dist/esm/languages/prism/asmatmel";
+import { FaCopy, FaDownload } from "react-icons/fa";
 
 import "./Output.css";
 import * as conv from "../lib/colorConvert";
 import { selectGradient, selectPresentData } from "../store";
 import { encodeUrlQuery } from "../lib/url";
+import Button from "./Button";
 
 SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
 
@@ -63,12 +65,15 @@ function Output() {
   return (
     <div className="Output">
       <div className="Output__header">
-        <button onClick={() => navigator.clipboard.writeText(code)}>
+        <Button
+          iconLeft={<FaCopy />}
+          onClick={() => navigator.clipboard.writeText(code)}
+        >
           Copy to clipboard
-        </button>{" "}
-        <a href={codeHref} download="gradient.s">
+        </Button>{" "}
+        <Button iconLeft={<FaDownload />} href={codeHref} download="gradient.s">
           Download source
-        </a>
+        </Button>
       </div>
       <SyntaxHighlighter
         language="asmatmel"

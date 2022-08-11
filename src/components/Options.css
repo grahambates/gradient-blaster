@@ -5,7 +5,9 @@
   margin-right: 1.5rem;
 }
 .Options label {
+  color: #ccc;
   display: block;
+  margin-bottom: 3px;
 }
 .Options input {
   width: 4rem;

@@ -22,12 +22,24 @@
   border-radius: 0 0 10px 10px;
 }
 
-.Detail__color {
-  display: flex;
-}
 .Detail__color * {
   vertical-align: middle;
 }
 .Detail__hexInput {
   width: 2rem;
+}
+
+.Detail__navBtn {
+  background: transparent;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: black;
+}
+.Detail__navBtn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.Detail__navBtn svg {
+  vertical-align: text-top;
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import * as conv from "../lib/colorConvert";
+import { FaTrash, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
+import * as conv from "../lib/colorConvert";
 import "./Detail.css";
 import {
   removePoint,
@@ -13,9 +14,9 @@ import {
   nextPoint
 } from "../store/points";
 import { selectOptions } from "../store/options";
-
-import Picker from "./Picker";
 import { clamp } from "../lib/colorConvert";
+import Picker from "./Picker";
+import Button from "./Button";
 
 function Detail() {
   const dispatch = useDispatch();
@@ -55,26 +56,30 @@ function Detail() {
         <div className="Detail__nav">
           Point:{" "}
           <button
+            className="Detail__navBtn"
             onClick={() => dispatch(previousPoint())}
             disabled={!selectedIndex}
           >
-            &lt;
+            <FaChevronLeft />
           </button>{" "}
           {selectedIndex + 1}/{points.length}{" "}
           <button
+            className="Detail__navBtn"
             onClick={() => dispatch(nextPoint())}
             disabled={selectedIndex >= points.length - 1}
           >
-            &gt;
+            <FaChevronRight />
           </button>
         </div>
-        <button
+        <Button
+          iconLeft={<FaTrash />}
+          small
           type="button"
           disabled={points.length < 3}
           onClick={() => dispatch(removePoint())}
         >
           Remove
-        </button>
+        </Button>
       </header>
       <div className="Detail__body">
         <div className="Detail__info">
@@ -82,6 +87,7 @@ function Detail() {
             <label htmlFor="Detail-hex">Color: $</label>
             <input
               id="Detail-hex"
+              type="text"
               className="Detail__hexInput"
               value={hex}
               onChange={e => {

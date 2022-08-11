@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { ActionCreators } from "redux-undo";
 import { useDispatch, useSelector } from "react-redux";
+import { FaUndo, FaRedo } from "react-icons/fa";
+import Button from "./Button";
 
 function History() {
   const dispatch = useDispatch();
@@ -24,18 +26,22 @@ function History() {
 
   return (
     <div className="History">
-      <button
+      <Button
+        dark
+        iconRight={<FaUndo />}
         disabled={!past.length}
         onClick={() => dispatch(ActionCreators.undo())}
       >
         Undo
-      </button>{" "}
-      <button
+      </Button>{" "}
+      <Button
+        dark
+        iconLeft={<FaRedo />}
         disabled={!future.length}
         onClick={() => dispatch(ActionCreators.redo())}
       >
         Redo
-      </button>
+      </Button>
     </div>
   );
 }

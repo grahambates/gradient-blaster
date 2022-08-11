@@ -11,3 +11,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+select,
+input[type="text"],
+input[type="number"] {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 0.2rem;
+}
