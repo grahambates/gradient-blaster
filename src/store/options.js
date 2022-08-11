@@ -1,11 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { decodeUrlQuery } from "../lib/url";
+
+const urlState = decodeUrlQuery(window.location.search);
 
 const initialState = {
   steps: 256,
   scale: 2,
   blendMode: "perceptual",
   ditherMode: "blueNoise",
-  ditherAmount: 50
+  ditherAmount: 50,
+  ...urlState.options
 };
 
 export const configSlice = createSlice({

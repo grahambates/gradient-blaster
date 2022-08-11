@@ -3,4 +3,6 @@
   color: #fff;
   margin: 0;
   padding: 1rem;
+  overflow: scroll;
+  width: 500px
 }

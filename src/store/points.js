@@ -1,16 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 import * as conv from "../lib/colorConvert";
+import { decodeUrlQuery } from "../lib/url";
 
+const urlState = decodeUrlQuery(window.location.search);
+
+console.log(urlState);
 // Assign unique IDs to points
 let id = 0;
-const pointId = () => id++;
+const nextId = () => id++;
 
 const initialState = {
   selectedIndex: 0,
-  items: [
-    { id: pointId(), pos: 0, color: conv.rgbToHsv([255, 255, 0]) },
-    { id: pointId(), pos: 1, color: conv.rgbToHsv([0, 0, 255]) }
-  ]
+  items: urlState.points
+    ? urlState.points.map(p => ({ id: nextId(), ...p }))
+    : [
+        { id: nextId(), pos: 0, color: conv.rgbToHsv([255, 255, 0]) },
+        { id: nextId(), pos: 1, color: conv.rgbToHsv([0, 0, 255]) }
+      ]
 };
 
 export const pointsSlice = createSlice({
@@ -19,7 +25,7 @@ export const pointsSlice = createSlice({
   reducers: {
     addPoint: (state, action) => {
       const newPoint = {
-        id: pointId(),
+        id: nextId(),
         ...action.payload
       };
       state.items.push(newPoint);

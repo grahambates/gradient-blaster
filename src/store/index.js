@@ -54,4 +54,6 @@ export const selectGradient = createSelector(
   }
 );
 
+export const selectPresentData = state => state.data.present;
+
 export default store;
