@@ -2,6 +2,51 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./Picker.css";
 import * as conv from "../lib/colorConvert";
 
+const swatches = [
+  [
+    "444",
+    "999",
+    "fff",
+    "f43",
+    "f90",
+    "fd0",
+    "dd0",
+    "ad0",
+    "6cc",
+    "7df",
+    "aaf",
+    "faf"
+  ],
+  [
+    "333",
+    "888",
+    "ccc",
+    "d31",
+    "e70",
+    "fc0",
+    "bb0",
+    "6b0",
+    "1aa",
+    "09e",
+    "76f",
+    "f2f"
+  ],
+  [
+    "000",
+    "666",
+    "bbb",
+    "900",
+    "c50",
+    "f90",
+    "880",
+    "143",
+    "077",
+    "06b",
+    "639",
+    "a19"
+  ]
+].map(row => row.map(conv.hexToRgb4));
+
 function Picker({ hsv, onChange }) {
   const rgb4 = conv.rgb8ToRgb4(conv.hsvToRgb(hsv));
   const [r, g, b] = rgb4;
@@ -22,7 +67,7 @@ function Picker({ hsv, onChange }) {
       <div className="Picker__info">
         <div className="Picker__infoLeft">
           <div
-            className="Picker__swatch"
+            className="Picker__current"
             style={{
               background: conv.rgbCssProp(conv.quantize4Bit(conv.hsvToRgb(hsv)))
             }}
@@ -76,6 +121,22 @@ function Picker({ hsv, onChange }) {
             />
           </div>
         </div>
+      </div>
+      <div className="Picker__swatches">
+        {swatches.map((row, i) => (
+          <div key={i} className="Picker__swatchesRow">
+            {row.map(rgb4 => (
+              <button
+                key={rgb4}
+                className="Picker__swatch"
+                style={{
+                  background: conv.rgbCssProp(conv.rgb4ToRgb8(rgb4))
+                }}
+                onClick={() => setRgb4(rgb4)}
+              />
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

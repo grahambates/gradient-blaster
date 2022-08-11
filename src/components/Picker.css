@@ -15,17 +15,31 @@
 .Picker__infoLeft input {
   width: 2rem;
 }
-.Picker__swatch {
+.Picker__current {
   width: 20px;
   height: 20px;
   margin-right: 0.25rem;
   border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
+.Picker__swatches {
+  margin-top: 1.5rem;
+}
+.Picker__swatchesRow {
+  display: flex;
+  justify-content: space-between;
+  margin: 3px 0;
+}
+.Picker__swatch {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
 .Picker__rgb {
   display: flex;
 }
-
 .Picker__rgb label {
   display: block;
 }
