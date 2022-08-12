@@ -3,7 +3,7 @@
 .App__top {
   background: rgb(43, 43, 43);
   color: white;
-  padding: 1.25rem 1.5rem;
+  padding: 0.75rem 1.5rem 1.25rem 1.5rem;
 
   display: flex;
   justify-content: space-between;
@@ -21,4 +21,9 @@
 
 .App__right{
   flex-grow: 1;
+}
+
+.App__bottom {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #eee;
 }

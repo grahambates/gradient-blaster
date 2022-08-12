@@ -6,6 +6,7 @@ import Options from "./Options";
 import Detail from "./Detail";
 import Output from "./Output";
 import History from "./History";
+import Footer from "./Footer";
 
 function App() {
   return (
@@ -27,6 +28,9 @@ function App() {
         <div className="App__right">
           <Output />
         </div>
+      </div>
+      <div className="App__bottom">
+        <Footer />
       </div>
     </div>
   );

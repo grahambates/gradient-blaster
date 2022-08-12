@@ -1,0 +1,13 @@
+.Footer {
+  display: flex;
+}
+.Footer > * {
+  margin-right: 2rem;
+}
+
+.Footer svg {
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+.Footer a {
+}
