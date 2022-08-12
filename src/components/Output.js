@@ -56,6 +56,7 @@ function Output() {
           <option value="paletteAsm">Palette: asm</option>
           <option value="paletteC">Palette: C</option>
           <option value="paletteBin">Palette: binary</option>
+          <option value="imagePng">PNG Image</option>
         </select>
       </div>
       {outputFormat === "copperList" && (
@@ -70,6 +71,7 @@ function Output() {
       {outputFormat === "paletteBin" && (
         <PaletteBin gradient={debouncedGradient} />
       )}
+      {outputFormat === "imagePng" && <ImagePng gradient={gradient} />}
     </div>
   );
 }
@@ -323,6 +325,48 @@ function CopperList({ gradient, query }) {
             onChange={e => setVarName(e.target.value)}
           />
         </div>
+      </div>
+    </>
+  );
+}
+
+function ImagePng({ gradient }) {
+  const [width, setWidth] = useState(gradient.length);
+  const canvasRef = useRef(null);
+  const [data, setData] = useState();
+
+  useEffect(() => {
+    const ctx = canvasRef.current.getContext("2d");
+    for (let i = 0; i < gradient.length; i++) {
+      ctx.fillStyle = conv.rgbCssProp(conv.rgb4ToRgb8(gradient[i]));
+      ctx.fillRect(0, i, width, i);
+    }
+    setData(canvasRef.current.toDataURL());
+  }, [gradient, width]);
+
+  return (
+    <>
+      <div className="Output__actions">
+        <canvas
+          style={{ display: "none" }}
+          ref={canvasRef}
+          width={width}
+          height={gradient.length}
+        />
+        <Button iconLeft={<FaDownload />} href={data} download="gradient.png">
+          Download
+        </Button>
+        <span>
+          <label htmlFor="Output-width">Width: </label>
+          <input
+            id="Output-width"
+            type="number"
+            min="1"
+            max="3000"
+            value={width}
+            onChange={e => setWidth(parseInt(e.target.value))}
+          />
+        </span>
       </div>
     </>
   );
