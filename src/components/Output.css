@@ -3,14 +3,36 @@
   flex-direction: column;
 }
 
-.Output__header {
+.Output__format {
   margin-bottom: 0.75rem;
 }
 
+.Output__actions {
+  margin-bottom: 0.5rem;
+}
+
+.Output__actions > * {
+  margin-right: 0.5rem;
+}
+
 .Output pre {
-  height: 430px;
+  height: 400px;
   font-size: 0.9em;
 }
 .Output code {
   word-break: break-word !important;
+}
+.Output input[type="number"] {
+  width: 4rem;
+}
+.Output input[type="text"] {
+  width: 8rem;
+}
+
+.Output__formatOptions {
+  display: flex;
+}
+
+.Output__formatOptions > div {
+  margin-right: 1rem;
 }

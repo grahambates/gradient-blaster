@@ -60,7 +60,7 @@ function Detail() {
             onClick={() => dispatch(previousPoint())}
             disabled={!selectedIndex}
           >
-            <FaChevronLeft />
+            <FaChevronLeft color={light ? "black" : "white"} />
           </button>{" "}
           {selectedIndex + 1}/{points.length}{" "}
           <button
@@ -68,7 +68,7 @@ function Detail() {
             onClick={() => dispatch(nextPoint())}
             disabled={selectedIndex >= points.length - 1}
           >
-            <FaChevronRight />
+            <FaChevronRight color={light ? "black" : "white"} />
           </button>
         </div>
         <Button

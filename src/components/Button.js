@@ -18,7 +18,7 @@ function Button({ dark, iconLeft, iconRight, small, children, href, ...rest }) {
 
   if (href) {
     return (
-      <a className={classes.join(" ")} {...rest}>
+      <a className={classes.join(" ")} href={href} {...rest}>
         {iconLeft}
         {children}
         {iconRight}
