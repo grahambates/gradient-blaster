@@ -8,7 +8,7 @@ const initialState = {
   scale: 2,
   blendMode: "perceptual",
   ditherMode: "blueNoise",
-  ditherAmount: 50,
+  ditherAmount: 40,
   ...urlState.options
 };
 

@@ -1,7 +1,15 @@
 import React from "react";
 import "./Button.css";
 
-function Button({ dark, iconLeft, iconRight, small, children, href, ...rest }) {
+function Button({
+  dark,
+  iconLeft,
+  iconRight,
+  minimal,
+  children,
+  href,
+  ...rest
+}) {
   const classes = ["Button"];
   if (dark) {
     classes.push("Button--dark");
@@ -12,8 +20,8 @@ function Button({ dark, iconLeft, iconRight, small, children, href, ...rest }) {
   if (iconRight) {
     classes.push("Button--iconRight");
   }
-  if (small) {
-    classes.push("Button--small");
+  if (minimal) {
+    classes.push("Button--minimal");
   }
 
   if (href) {

@@ -9,11 +9,16 @@
 }
 
 .Detail__header {
-  background: #ccc;
+  color: white;
   padding: 12px 18px;
   border-radius: 10px 10px 0 0;
   display: flex;
   justify-content: space-between;
+}
+
+.Detail__header--light {
+  color: inherit;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .Detail__body {
@@ -29,17 +34,6 @@
   width: 2rem;
 }
 
-.Detail__navBtn {
-  background: transparent;
-  border: none;
-  padding: 0.25rem;
-  cursor: pointer;
-  color: black;
-}
-.Detail__navBtn:disabled {
-  opacity: 0.25;
-  cursor: default;
-}
-.Detail__navBtn svg {
+.Detail__nav svg {
   vertical-align: text-top;
 }

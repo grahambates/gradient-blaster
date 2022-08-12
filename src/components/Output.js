@@ -23,7 +23,7 @@ const baseUrl = window.location.href.split("?")[0];
 const selectQuery = createSelector(selectPresentData, encodeUrlQuery);
 
 function Output() {
-  const [outputFormat, setOutputFormat] = useState("paletteAsm");
+  const [outputFormat, setOutputFormat] = useState("copperList");
   const query = useSelector(selectQuery);
   const gradient = useSelector(selectGradient);
 
@@ -52,11 +52,15 @@ function Output() {
           value={outputFormat}
           onChange={e => setOutputFormat(e.target.value)}
         >
-          <option value="paletteAsm">Palette (ASM)</option>
-          <option value="paletteC">Palette (C)</option>
-          <option value="paletteBin">Palette (binary)</option>
+          <option value="copperList">Copper list</option>
+          <option value="paletteAsm">Palette: asm</option>
+          <option value="paletteC">Palette: C</option>
+          <option value="paletteBin">Palette: binary</option>
         </select>
       </div>
+      {outputFormat === "copperList" && (
+        <CopperList gradient={debouncedGradient} query={debouncedQuery} />
+      )}
       {outputFormat === "paletteAsm" && (
         <PaletteAsm gradient={debouncedGradient} query={debouncedQuery} />
       )}
@@ -202,6 +206,125 @@ function PaletteBin({ gradient }) {
         mimetype="application/octet-stream;base64"
       />
     </div>
+  );
+}
+
+function buildCopperList(
+  gradient,
+  { startLine = 0x2b, varName, colorIndex, waitStart, endList }
+) {
+  const hexCodes = gradient.map(conv.rgb4ToHex);
+  const colorReg = "$" + (0x180 + colorIndex).toString(16);
+  let output = [];
+  if (varName) {
+    output.push(varName + ":");
+  }
+
+  let lastCol;
+  let line = startLine;
+  for (const hex of hexCodes) {
+    if (lastCol !== hex) {
+      const l = (line & 0xff).toString(16);
+      if (line > startLine || waitStart) {
+        output.push(`\tdc.w $${l}07,$fffe`);
+      }
+      output.push(`\tdc.w ${colorReg},$${hex}`);
+    }
+    // PAL fix
+    if (line === 0xff) {
+      output.push(`\tdc.w $ffdf,$fffe ; PAL fix`);
+    }
+    lastCol = hex;
+    line++;
+  }
+  if (endList) {
+    output.push(`\tdc.w $ffff,$fffe ; End copper list`);
+  }
+  return output.join("\n");
+}
+
+function CopperList({ gradient, query }) {
+  const [startLine, setStartLine] = useState(0x2b);
+  const [colorIndex, setColorIndex] = useState(0);
+  const [varName, setVarName] = useState("Gradient");
+  const [waitStart, setWaitStart] = useState(true);
+  const [endList, setEndList] = useState(true);
+
+  const formatted = buildCopperList(gradient, {
+    varName,
+    colorIndex,
+    startLine,
+    waitStart,
+    endList
+  });
+  const code = "; " + baseUrl + query + "\n" + formatted;
+
+  return (
+    <>
+      <div className="Output__actions">
+        <CopyLink code={code} />
+        <DownloadLink data={code} filename="gradient.s" />
+      </div>
+      <SyntaxHighlighter
+        language="asmatmel"
+        style={a11yDark}
+        wrapLines
+        wrapLongLines
+      >
+        {code}
+      </SyntaxHighlighter>
+
+      <div className="Output__formatOptions">
+        <div>
+          <label htmlFor="Output-startLine">Start line: </label>
+          <input
+            id="Output-startLine"
+            type="text"
+            value={startLine ? startLine.toString(16) : ""}
+            onChange={e => setStartLine(parseInt(e.target.value, 16))}
+          />
+        </div>
+        <div>
+          <label htmlFor="Output-colorIndex">Color index: </label>
+          <input
+            id="Output-colorIndex"
+            type="number"
+            min="0"
+            max="31"
+            value={colorIndex}
+            onChange={e => setColorIndex(parseInt(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={waitStart}
+              onChange={e => setWaitStart(e.target.checked)}
+            />{" "}
+            Wait for start
+          </label>
+          <br />
+          <label>
+            <input
+              type="checkbox"
+              checked={endList}
+              onChange={e => setEndList(e.target.checked)}
+            />{" "}
+            End copper list
+          </label>
+        </div>
+        <div>
+          <label htmlFor="Output-varName">Label: </label>
+          <input
+            id="Output-varName"
+            type="text"
+            value={varName}
+            onChange={e => setVarName(e.target.value)}
+          />
+        </div>
+      </div>
+    </>
   );
 }
 

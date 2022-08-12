@@ -47,39 +47,41 @@ function Detail() {
   const color = conv.rgbCssProp(conv.quantize4Bit(rgb));
   const light = conv.luminance(rgb) > 128;
 
+  const classes = ["Detail__header"];
+  if (light) {
+    classes.push("Detail__header--light");
+  }
+
   return (
     <section className="Detail">
-      <header
-        className="Detail__header"
-        style={{ background: color, color: light ? "inherit" : "white" }}
-      >
+      <header className={classes.join(" ")} style={{ background: color }}>
         <div className="Detail__nav">
           Point:{" "}
-          <button
-            className="Detail__navBtn"
+          <Button
+            minimal
             onClick={() => dispatch(previousPoint())}
             disabled={!selectedIndex}
           >
             <FaChevronLeft color={light ? "black" : "white"} />
-          </button>{" "}
+          </Button>{" "}
           {selectedIndex + 1}/{points.length}{" "}
-          <button
-            className="Detail__navBtn"
+          <Button
+            minimal
             onClick={() => dispatch(nextPoint())}
             disabled={selectedIndex >= points.length - 1}
           >
             <FaChevronRight color={light ? "black" : "white"} />
-          </button>
+          </Button>
         </div>
-        <Button
-          iconLeft={<FaTrash />}
-          small
-          type="button"
-          disabled={points.length < 3}
-          onClick={() => dispatch(removePoint())}
-        >
-          Remove
-        </Button>
+        {points.length > 2 && (
+          <Button
+            iconLeft={<FaTrash />}
+            minimal
+            onClick={() => dispatch(removePoint())}
+          >
+            Remove
+          </Button>
+        )}
       </header>
       <div className="Detail__body">
         <div className="Detail__info">

@@ -26,13 +26,19 @@
   width: 4rem;
 }
 .Output input[type="text"] {
-  width: 8rem;
+  width: 9rem;
 }
 
 .Output__formatOptions {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .Output__formatOptions > div {
-  margin-right: 1rem;
+  width: 50%;
+  margin-bottom: 0.5rem;
+}
+
+#Output-startLine {
+  width: 3rem;
 }

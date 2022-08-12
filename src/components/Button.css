@@ -10,6 +10,7 @@
   padding: 0.5rem 0.75rem;
   cursor: pointer;
   text-decoration: none;
+  vertical-align: middle;
 }
 
 .Button:hover {
@@ -45,8 +46,17 @@
   border-color: #bbb;
 }
 
-.Button--small {
-  font-size: 0.9rem;
+.Button--minimal {
   height: auto;
-  padding: 0.25rem 0.25rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: currentColor;
+  font-size: 0.9em;
+}
+
+.Button--minimal:hover {
+  background: transparent;
+  border-color: none;
+  opacity: 0.8;
 }
