@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addPoint,
   removePoint,
+  clonePoint,
   setPos,
   selectIndex,
   selectPoints,
@@ -71,6 +72,7 @@ function Gradient() {
             y={p.pos * height}
             selected={i === selected}
             onMove={handleMove}
+            onClone={() => dispatch(clonePoint())}
             onSelect={() => dispatch(selectIndex(i))}
             onRemove={() => dispatch(removePoint())}
           />

@@ -37,6 +37,14 @@ export const pointsSlice = createSlice({
         state.selectedIndex = Math.max(state.selectedIndex - 1, 0);
       }
     },
+    clonePoint: state => {
+      const selected = state.items[state.selectedIndex];
+      const clonedPoint = {
+        ...selected,
+        id: nextId()
+      };
+      state.items.splice(state.selectedIndex + 1, 0, clonedPoint);
+    },
     setPos: (state, action) => {
       const selected = state.items[state.selectedIndex];
       selected.pos = action.payload;
@@ -61,6 +69,7 @@ export const pointsSlice = createSlice({
 export const {
   addPoint,
   removePoint,
+  clonePoint,
   setPos,
   setColor,
   selectIndex,

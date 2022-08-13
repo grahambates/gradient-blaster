@@ -9,6 +9,7 @@ function Point({
   color,
   selected,
   onMove,
+  onClone,
   onSelect,
   onRemove,
   initialDrag
@@ -20,6 +21,9 @@ function Point({
 
   const handleClick = e => {
     e.stopPropagation();
+    if (e.altKey) {
+      onClone();
+    }
     onSelect();
     setIsDragging(true);
   };
