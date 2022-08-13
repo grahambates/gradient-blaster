@@ -376,7 +376,13 @@ function CopyLink({ code }) {
   return (
     <Button
       iconLeft={<FaCopy />}
-      onClick={() => navigator.clipboard.writeText(code)}
+      onClick={() => {
+        navigator.clipboard.writeText(code);
+        document.body.classList.add("codeCopied");
+        setTimeout(() => {
+          document.body.classList.remove("codeCopied");
+        }, 1);
+      }}
     >
       Copy to clipboard
     </Button>
