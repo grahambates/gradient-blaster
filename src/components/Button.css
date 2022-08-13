@@ -19,11 +19,6 @@
   border-color: #bbb;
 }
 
-.Button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
 .Button > * {
   vertical-align: middle;
 }
@@ -60,4 +55,9 @@
   background: transparent;
   border-color: none;
   opacity: 0.8;
+}
+
+.Button:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
