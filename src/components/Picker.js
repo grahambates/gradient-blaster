@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import "./Picker.css";
 import * as conv from "../lib/colorConvert";
 
+// Standard palette swatches, divided into rows
 const swatches = [
   [
     "444",
@@ -47,7 +48,7 @@ const swatches = [
   ]
 ].map(row => row.map(conv.hexToRgb4));
 
-function Picker({ hsv, onChange }) {
+const Picker = React.memo(({ hsv, onChange }) => {
   const setRgb4 = newRgb4 => {
     onChange(conv.rgbToHsv(conv.rgb4ToRgb8(newRgb4)));
   };
@@ -74,9 +75,9 @@ function Picker({ hsv, onChange }) {
       </div>
     </div>
   );
-}
+});
 
-function PickerSquare({ hsv, onChange }) {
+const PickerSquare = ({ hsv, onChange }) => {
   const width = 256;
   const height = 256;
   const canvasRef = useRef(null);
@@ -155,9 +156,9 @@ function PickerSquare({ hsv, onChange }) {
       />
     </div>
   );
-}
+};
 
-function HueStrip({ hsv, onChange }) {
+const HueStrip = ({ hsv, onChange }) => {
   const width = 256;
   const height = 14;
   const canvasRef = useRef(null);
@@ -213,6 +214,6 @@ function HueStrip({ hsv, onChange }) {
       />
     </div>
   );
-}
+};
 
 export default Picker;

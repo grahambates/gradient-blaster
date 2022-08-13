@@ -1,14 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { decodeUrlQuery } from "../lib/url";
+import { reset } from "./actions";
 
 const urlState = decodeUrlQuery(window.location.search);
 
-const initialState = {
+const defaultState = {
   steps: 256,
   scale: 2,
   blendMode: "perceptual",
   ditherMode: "blueNoise",
-  ditherAmount: 40,
+  ditherAmount: 40
+};
+
+const initialState = {
+  ...defaultState,
   ...urlState.options
 };
 
@@ -30,6 +35,11 @@ export const configSlice = createSlice({
     },
     setDitherAmount: (state, action) => {
       state.ditherAmount = action.payload;
+    }
+  },
+  extraReducers: {
+    [reset]() {
+      return defaultState;
     }
   }
 });

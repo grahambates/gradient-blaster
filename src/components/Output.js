@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { createSelector } from "@reduxjs/toolkit";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import asmatmel from "react-syntax-highlighter/dist/esm/languages/prism/asmatmel";
@@ -16,32 +15,29 @@ import Button from "./Button";
 SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
 SyntaxHighlighter.registerLanguage("c", c);
 
-const DEBOUNCE_DELAY = 100;
+const DEBOUNCE_DELAY = 50;
 
 const baseUrl = window.location.href.split("?")[0];
 
-const selectQuery = createSelector(selectPresentData, encodeUrlQuery);
-
 function Output() {
   const [outputFormat, setOutputFormat] = useState("copperList");
-  const query = useSelector(selectQuery);
+  const present = useSelector(selectPresentData);
   const gradient = useSelector(selectGradient);
 
-  useEffect(() => {
-    window.history.replaceState({}, null, window.location.pathname + query);
-  }, [query]);
-
-  const timeout = useRef(0);
-
+  // Delay update to output for performance i.e. dont generate 1000s of times while dragging
   const [debouncedGradient, setDebouncedGradient] = useState(gradient);
-  const [debouncedQuery, setDebouncedQuery] = useState(query);
+  const [debouncedQuery, setDebouncedQuery] = useState();
+  const timeout = useRef(0);
   useEffect(() => {
     if (timeout.current) clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
+      const query = encodeUrlQuery(present);
       setDebouncedQuery(query);
       setDebouncedGradient(gradient);
+      // Update URL path
+      window.history.replaceState({}, null, window.location.pathname + query);
     }, DEBOUNCE_DELAY);
-  }, [query, gradient]);
+  }, [present, gradient]);
 
   return (
     <div className="Output">
@@ -85,7 +81,7 @@ const formatPaletteAsm = (values, { rowSize = 16, label = "Gradient" }) => {
   return output;
 };
 
-function PaletteAsm({ gradient, query }) {
+const PaletteAsm = React.memo(({ gradient, query }) => {
   const [rowSize, setRowSize] = useState(8);
   const [varName, setVarName] = useState("Gradient");
   const formatted = formatPaletteAsm(gradient, { rowSize });
@@ -97,14 +93,7 @@ function PaletteAsm({ gradient, query }) {
         <CopyLink code={code} />
         <DownloadLink data={code} filename="gradient.s" />
       </div>
-      <SyntaxHighlighter
-        language="asmatmel"
-        style={a11yDark}
-        wrapLines
-        wrapLongLines
-      >
-        {code}
-      </SyntaxHighlighter>
+      <Code language="asmatmel" code={code} />
 
       <div className="Output__formatOptions">
         <div>
@@ -130,7 +119,7 @@ function PaletteAsm({ gradient, query }) {
       </div>
     </>
   );
-}
+});
 
 const formatPaletteC = (values, { rowSize = 16, varName = "gradient" }) => {
   let output = `unsigned short ${varName}[${values.length}] = {`;
@@ -141,7 +130,7 @@ const formatPaletteC = (values, { rowSize = 16, varName = "gradient" }) => {
   return output + "\n};";
 };
 
-function PaletteC({ gradient, query }) {
+const PaletteC = React.memo(({ gradient, query }) => {
   const [rowSize, setRowSize] = useState(8);
   const [varName, setVarName] = useState("gradient");
   const formatted = formatPaletteC(gradient, { rowSize, varName });
@@ -153,9 +142,7 @@ function PaletteC({ gradient, query }) {
         <CopyLink code={code} />
         <DownloadLink data={code} filename="gradient.c" />
       </div>
-      <SyntaxHighlighter language="c" style={a11yDark} wrapLines wrapLongLines>
-        {code}
-      </SyntaxHighlighter>
+      <Code language="c" code={code} />
 
       <div className="Output__formatOptions">
         <div>
@@ -181,7 +168,7 @@ function PaletteC({ gradient, query }) {
       </div>
     </>
   );
-}
+});
 
 const gradientToBytes = gradient => {
   const bytes = new Uint8Array(gradient.length * 2);
@@ -198,7 +185,7 @@ const base64Encode = bytes =>
     bytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
   );
 
-function PaletteBin({ gradient }) {
+const PaletteBin = React.memo(({ gradient }) => {
   const bytes = gradientToBytes(gradient);
   return (
     <div className="Output__actions">
@@ -209,7 +196,7 @@ function PaletteBin({ gradient }) {
       />
     </div>
   );
-}
+});
 
 function buildCopperList(
   gradient,
@@ -245,7 +232,7 @@ function buildCopperList(
   return output.join("\n");
 }
 
-function CopperList({ gradient, query }) {
+const CopperList = React.memo(({ gradient, query }) => {
   const [startLine, setStartLine] = useState(0x2b);
   const [colorIndex, setColorIndex] = useState(0);
   const [varName, setVarName] = useState("Gradient");
@@ -267,14 +254,7 @@ function CopperList({ gradient, query }) {
         <CopyLink code={code} />
         <DownloadLink data={code} filename="gradient.s" />
       </div>
-      <SyntaxHighlighter
-        language="asmatmel"
-        style={a11yDark}
-        wrapLines
-        wrapLongLines
-      >
-        {code}
-      </SyntaxHighlighter>
+      <Code language="asmatmel" code={code} />
 
       <div className="Output__formatOptions">
         <div>
@@ -328,7 +308,7 @@ function CopperList({ gradient, query }) {
       </div>
     </>
   );
-}
+});
 
 function ImagePng({ gradient }) {
   const [width, setWidth] = useState(gradient.length);
@@ -401,5 +381,18 @@ function DownloadLink({
     </Button>
   );
 }
+
+const Code = ({ language, code }) => {
+  return (
+    <SyntaxHighlighter
+      language={language}
+      style={a11yDark}
+      wrapLines
+      wrapLongLines
+    >
+      {code}
+    </SyntaxHighlighter>
+  );
+};
 
 export default Output;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FaTrash, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
@@ -51,6 +51,10 @@ function Detail() {
   if (light) {
     classes.push("Detail__header--light");
   }
+
+  const handleChangeColor = useCallback(color => dispatch(setColor(color)), [
+    dispatch
+  ]);
 
   return (
     <section className="Detail">
@@ -114,10 +118,7 @@ function Detail() {
             />
           </div>
         </div>
-        <Picker
-          hsv={selectedPoint.color}
-          onChange={color => dispatch(setColor(color))}
-        />
+        <Picker hsv={selectedPoint.color} onChange={handleChangeColor} />
       </div>
     </section>
   );

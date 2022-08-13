@@ -1,0 +1,9 @@
+.History {
+  display: flex;
+}
+.History .Button {
+  margin-left: 0.25rem;
+}
+.History__group {
+  margin-left: 1rem;
+}
