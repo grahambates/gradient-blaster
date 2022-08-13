@@ -1,6 +1,7 @@
 .Output {
   display: flex;
   flex-direction: column;
+  max-width: 700px;
 }
 
 .Output__format {
@@ -33,12 +34,13 @@
   width: 4rem;
 }
 .Output input[type="text"] {
-  width: 9rem;
+  width: 8rem;
 }
 
 .Output__formatOptions {
   display: flex;
   flex-wrap: wrap;
+  max-width: 400px;
 }
 
 .Output__formatOptions > div {

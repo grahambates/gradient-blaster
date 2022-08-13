@@ -12,6 +12,7 @@
   text-decoration: none;
   vertical-align: middle;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 .Button:hover {

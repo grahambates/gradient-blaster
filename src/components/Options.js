@@ -78,7 +78,7 @@ function Options() {
       </div>
 
       {!["off", "shuffle"].includes(ditherMode) && (
-        <div>
+        <div className="Options__ditherAmount">
           <label htmlFor="ditherAmount">Dither amount: </label>
           <input
             type="range"
@@ -90,7 +90,7 @@ function Options() {
           />
           <input
             id="ditherAmount"
-            className="Options__ditherAmount"
+            className="Options__ditherAmountInput"
             type="number"
             min={0}
             max={100}

@@ -8,14 +8,18 @@
   color: #ccc;
   display: block;
   margin-bottom: 3px;
+  white-space: nowrap;
 }
 .Options input {
   width: 4rem;
+}
+.Options__ditherAmount {
+  white-space: nowrap;
 }
 input.Options__ditherAmountRange {
   width: 200px;
   vertical-align: middle;
 }
-input.Options__ditherAmount {
+input.Options__ditherAmountInput {
   width: 3rem;
 }
