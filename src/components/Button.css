@@ -11,6 +11,7 @@
   cursor: pointer;
   text-decoration: none;
   vertical-align: middle;
+  border-radius: 4px;
 }
 
 .Button:hover {
