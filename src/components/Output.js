@@ -26,7 +26,7 @@ function Output() {
 
   // Delay update to output for performance i.e. dont generate 1000s of times while dragging
   const [debouncedGradient, setDebouncedGradient] = useState(gradient);
-  const [debouncedQuery, setDebouncedQuery] = useState();
+  const [debouncedQuery, setDebouncedQuery] = useState(encodeUrlQuery(present));
   const timeout = useRef(0);
   useEffect(() => {
     if (timeout.current) clearTimeout(timeout.current);
