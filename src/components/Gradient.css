@@ -12,6 +12,5 @@
 
 .Gradient__canvas {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  max-width: 512px;
   width: 100%;
 }

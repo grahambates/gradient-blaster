@@ -11,16 +11,10 @@
 }
 
 .App__main {
-  display: flex;
   padding: 1.5rem;
-}
-
-.App__middle {
-  margin: 0 2rem;
-}
-
-.App__right{
-  flex-grow: 1;
+  display:grid;
+  grid-template-columns: 292px minmax(256px, 512px) minmax(430px, 800px);
+  column-gap: 2rem;
 }
 
 .App__bottom {

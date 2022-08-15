@@ -1,7 +1,6 @@
 .Output {
   display: flex;
   flex-direction: column;
-  max-width: 700px;
 }
 
 .Output__format {
@@ -40,7 +39,7 @@
 .Output__formatOptions {
   display: flex;
   flex-wrap: wrap;
-  max-width: 400px;
+  max-width: 500px;
 }
 
 .Output__formatOptions > div {
