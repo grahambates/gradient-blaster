@@ -179,3 +179,70 @@ export function clamp(value, min = 0, max = 1) {
 export function sameColors(a, b) {
   return a.join(",") === b.join(",");
 }
+
+export const lrgbToRgb = (col) => {
+  return col.map((c) => {
+    const abs = Math.abs(c);
+    if (abs > 0.0031308) {
+      return (Math.sign(c) || 1) * (1.055 * Math.pow(abs, 1 / 2.4) - 0.055);
+    }
+    return c * 12.92;
+  });
+};
+
+export const rgbToLrgb = (col) => {
+  return col.map((c) => {
+    const abs = Math.abs(c);
+    if (abs < 0.04045) {
+      return c / 12.92;
+    }
+    return (Math.sign(c) || 1) * Math.pow((abs + 0.055) / 1.055, 2.4);
+  });
+};
+
+export function rgbToOklab(col) {
+  const [r, g, b] = rgbToLrgb(col);
+
+  let L = Math.cbrt(
+    0.41222147079999993 * r + 0.5363325363 * g + 0.0514459929 * b
+  );
+  let M = Math.cbrt(
+    0.2119034981999999 * r + 0.6806995450999999 * g + 0.1073969566 * b
+  );
+  let S = Math.cbrt(
+    0.08830246189999998 * r + 0.2817188376 * g + 0.6299787005000002 * b
+  );
+
+  return [
+    0.2104542553 * L + 0.793617785 * M - 0.0040720468 * S,
+    1.9779984951 * L - 2.428592205 * M + 0.4505937099 * S,
+    0.0259040371 * L + 0.7827717662 * M - 0.808675766 * S,
+  ];
+}
+
+export function oklabToRgb([l, a, b]) {
+  let L = Math.pow(
+    l * 0.99999999845051981432 +
+      0.39633779217376785678 * a +
+      0.21580375806075880339 * b,
+    3
+  );
+  let M = Math.pow(
+    l * 1.0000000088817607767 -
+      0.1055613423236563494 * a -
+      0.063854174771705903402 * b,
+    3
+  );
+  let S = Math.pow(
+    l * 1.0000000546724109177 -
+      0.089484182094965759684 * a -
+      1.2914855378640917399 * b,
+    3
+  );
+
+  return lrgbToRgb([
+    +4.076741661347994 * L - 3.307711590408193 * M + 0.230969928729428 * S,
+    -1.2684380040921763 * L + 2.6097574006633715 * M - 0.3413193963102197 * S,
+    -0.004196086541837188 * L - 0.7034186144594493 * M + 1.7076147009309444 * S,
+  ]);
+}

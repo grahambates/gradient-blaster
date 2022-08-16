@@ -42,6 +42,11 @@ export function buildGradient(points, options) {
             lerpTuple(conv.rgbToLab(from), conv.rgbToLab(to), pos)
           );
           break;
+        case "oklab":
+          mixed = conv.oklabToRgb(
+            lerpTuple(conv.rgbToOklab(from), conv.rgbToOklab(to), pos)
+          );
+          break;
         case "perceptual":
           mixed = perceptualMix(from, to, pos);
           break;
