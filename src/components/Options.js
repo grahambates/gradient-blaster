@@ -7,13 +7,14 @@ import {
   setBlendMode,
   setDitherMode,
   setDitherAmount,
+  setShuffleCount,
   selectOptions
 } from "../store/options";
 
 function Options() {
   const dispatch = useDispatch();
   const options = useSelector(selectOptions);
-  const { steps, blendMode, ditherMode, ditherAmount } = options;
+  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount } = options;
 
   return (
     <div className="Options">
@@ -85,6 +86,21 @@ function Options() {
             onChange={e => dispatch(setDitherAmount(parseInt(e.target.value)))}
           />{" "}
           %
+        </div>
+      )}
+
+      {ditherMode === "shuffle" && (
+        <div className="Options__shuffleCount">
+          <label htmlFor="shuffleCount">Shuffle count: </label>
+          <input
+            id="shuffleCount"
+            className="Options__shuffleCount"
+            type="number"
+            min={1}
+            max={5}
+            value={shuffleCount}
+            onChange={e => dispatch(setShuffleCount(parseInt(e.target.value)))}
+          />
         </div>
       )}
     </div>

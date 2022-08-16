@@ -59,7 +59,7 @@ export function buildGradient(points, options) {
   }
 
   if (ditherMode !== "off") {
-    values = dither(values, ditherMode, ditherAmount);
+    values = dither(values, options);
   }
 
   return values.map(conv.rgb8ToRgb4);
@@ -96,8 +96,7 @@ function perceptualMix(color1, color2, pos) {
   return mixed.map(conv.linearToSrgb);
 }
 
-function dither(values, ditherMode, ditherAmount) {
-  let swappedLast = false;
+function dither(values, { ditherMode, ditherAmount, shuffleCount }) {
   const amount = ditherAmount / 100;
 
   if (ditherMode === "errorDiffusion") {
@@ -122,15 +121,27 @@ function dither(values, ditherMode, ditherAmount) {
       case "shuffle": {
         if (i > 0) {
           const prev = values[i - 1];
-          if (
-            !swappedLast &&
-            !conv.sameColors(conv.rgb8ToRgb4(prev), conv.rgb8ToRgb4(values[i]))
-          ) {
+          const current = values[i];
+          if (!same4bit(prev, current)) {
+            // First shuffle
             values[i - 1] = values[i];
             values[i] = prev;
-            swappedLast = true;
-          } else {
-            swappedLast = false;
+            i++;
+
+            // Additional shuffles
+            for (let j = 0; j < shuffleCount - 1; j++) {
+              let n = (j + 1) * 4;
+              if (
+                values[i + 1] &&
+                same4bit(current, values[i + 1]) &&
+                values[i - n] &&
+                same4bit(prev, values[i - n])
+              ) {
+                values[i - n] = current;
+                values[i + 1] = prev;
+                i += 2;
+              }
+            }
           }
         }
         break;
@@ -190,6 +201,9 @@ function dither(values, ditherMode, ditherAmount) {
   }
   return values;
 }
+
+const same4bit = (a, b) =>
+  conv.sameColors(conv.rgb8ToRgb4(a), conv.rgb8ToRgb4(b));
 
 function lerpTuple(from, to, pos) {
   const ret = [

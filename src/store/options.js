@@ -8,7 +8,8 @@ const defaultState = {
   steps: 256,
   blendMode: "oklab",
   ditherMode: "blueNoise",
-  ditherAmount: 40
+  ditherAmount: 40,
+  shuffleCount: 2
 };
 
 const initialState = {
@@ -31,6 +32,9 @@ export const configSlice = createSlice({
     },
     setDitherAmount: (state, action) => {
       state.ditherAmount = action.payload;
+    },
+    setShuffleCount: (state, action) => {
+      state.shuffleCount = action.payload;
     }
   },
   extraReducers: {
@@ -44,7 +48,8 @@ export const {
   setSteps,
   setBlendMode,
   setDitherMode,
-  setDitherAmount
+  setDitherAmount,
+  setShuffleCount
 } = configSlice.actions;
 
 export const selectOptions = state => state.data.present.options;

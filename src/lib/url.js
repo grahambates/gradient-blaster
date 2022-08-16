@@ -2,28 +2,39 @@ import qs from "qs";
 import * as conv from "./colorConvert";
 
 export const encodeUrlQuery = ({ points, options }) => {
-  const { steps, blendMode, ditherMode, ditherAmount } = options;
-  return `?points=${encodePoints(points.items, options.steps)}&${qs.stringify({
-    steps,
-    blendMode,
-    ditherMode,
-    ditherAmount,
-  })}`;
+  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount } = options;
+  const opts = { steps, blendMode, ditherMode };
+  if (!["off", "shuffle"].includes(ditherMode)) {
+    opts.ditherAmount = ditherAmount;
+  }
+  if (ditherMode === "shuffle") {
+    opts.shuffleCount = shuffleCount;
+  }
+  return `?points=${encodePoints(points.items, options.steps)}&${qs.stringify(
+    opts
+  )}`;
 };
 
 export const decodeUrlQuery = (query) => {
   if (!query) return {};
-  const { points, steps, blendMode, ditherMode, ditherAmount } = qs.parse(
-    query.substring(1)
-  );
+  const { points, steps, blendMode, ditherMode, ditherAmount, shuffleCount } =
+    qs.parse(query.substring(1));
+  const options = {
+    steps,
+    blendMode,
+    ditherMode,
+    ditherAmount,
+    shuffleCount,
+  };
+  // Remove undefine
+  Object.keys(options).forEach((key) => {
+    if (options[key] === undefined) {
+      delete options[key];
+    }
+  });
   return {
     points: points && steps && decodePoints(points, steps),
-    options: {
-      steps,
-      blendMode,
-      ditherMode,
-      ditherAmount,
-    },
+    options,
   };
 };
 
