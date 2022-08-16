@@ -1,20 +1,25 @@
 import qs from "qs";
 import * as conv from "./colorConvert";
 
-export const encodeUrlQuery = ({ points, options }) =>
-  `?points=${encodePoints(points.items, options.steps)}&${qs.stringify(
-    options
-  )}`;
+export const encodeUrlQuery = ({ points, options }) => {
+  const { steps, blendMode, ditherMode, ditherAmount } = options;
+  return `?points=${encodePoints(points.items, options.steps)}&${qs.stringify({
+    steps,
+    blendMode,
+    ditherMode,
+    ditherAmount,
+  })}`;
+};
 
 export const decodeUrlQuery = (query) => {
   if (!query) return {};
-  const { points, steps, scale, blendMode, ditherMode, ditherAmount } =
-    qs.parse(query.substring(1));
+  const { points, steps, blendMode, ditherMode, ditherAmount } = qs.parse(
+    query.substring(1)
+  );
   return {
     points: points && steps && decodePoints(points, steps),
     options: {
       steps,
-      scale,
       blendMode,
       ditherMode,
       ditherAmount,

@@ -39,7 +39,8 @@ const data = undoable(
     filter: excludeAction([
       "points/selectIndex",
       "points/nextPoint",
-      "points/previousPoint"
+      "points/previousPoint",
+      "options/setScale"
     ])
   }
 );

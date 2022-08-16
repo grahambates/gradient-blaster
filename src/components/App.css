@@ -14,7 +14,7 @@
   padding: 1.5rem;
   display:grid;
   grid-template-columns: 292px minmax(256px, 512px) minmax(430px, 800px);
-  column-gap: 2rem;
+  column-gap: 3rem;
 }
 
 .App__bottom {

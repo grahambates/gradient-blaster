@@ -42,7 +42,7 @@ function Output() {
   return (
     <div className="Output">
       <div className="Output__format">
-        <label htmlFor="Output-format">Output format</label>{" "}
+        <label htmlFor="Output-format">Output: </label>{" "}
         <select
           id="Output-format"
           value={outputFormat}

@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from "react-redux";
 import "./Options.css";
 
 import {
-  setScale,
   setSteps,
   setBlendMode,
   setDitherMode,
@@ -14,7 +13,7 @@ import {
 function Options() {
   const dispatch = useDispatch();
   const options = useSelector(selectOptions);
-  const { steps, scale, blendMode, ditherMode, ditherAmount } = options;
+  const { steps, blendMode, ditherMode, ditherAmount } = options;
 
   return (
     <div className="Options">
@@ -23,24 +22,11 @@ function Options() {
         <input
           id="steps"
           type="number"
-          min={0}
+          min={2}
           max={2000}
           value={steps}
           onChange={e => dispatch(setSteps(parseInt(e.target.value)))}
         />
-      </div>
-
-      <div>
-        <label htmlFor="steps">Preview scale: </label>
-        <input
-          id="scale"
-          type="number"
-          min={1}
-          max={20}
-          value={scale}
-          onChange={e => dispatch(setScale(parseInt(e.target.value)))}
-        />{" "}
-        x
       </div>
 
       <div>

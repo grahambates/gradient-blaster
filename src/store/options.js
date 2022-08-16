@@ -6,7 +6,6 @@ const urlState = decodeUrlQuery(window.location.search);
 
 const defaultState = {
   steps: 256,
-  scale: 2,
   blendMode: "perceptual",
   ditherMode: "blueNoise",
   ditherAmount: 40
@@ -23,9 +22,6 @@ export const configSlice = createSlice({
   reducers: {
     setSteps: (state, action) => {
       state.steps = action.payload;
-    },
-    setScale: (state, action) => {
-      state.scale = action.payload;
     },
     setBlendMode: (state, action) => {
       state.blendMode = action.payload;
@@ -46,7 +42,6 @@ export const configSlice = createSlice({
 
 export const {
   setSteps,
-  setScale,
   setBlendMode,
   setDitherMode,
   setDitherAmount

@@ -21,8 +21,17 @@ function Gradient() {
   const points = useSelector(selectPoints);
   const selected = useSelector(selectSelectedIndex);
   const gradient = useSelector(selectGradient);
+  const { steps } = options;
 
-  const { steps, scale } = options;
+  const [scale, setScale] = useState(1);
+  const [autoScale, setAutoScale] = useState(true);
+
+  useEffect(() => {
+    if (autoScale) {
+      setScale(Math.floor(512 / steps) || 1);
+    }
+  }, [steps, autoScale]);
+
   const height = steps * scale;
 
   const [isDragging, setIsDragging] = useState(false);
@@ -55,31 +64,53 @@ function Gradient() {
   };
 
   return (
-    <div className="Gradient">
-      <div
-        className="Gradient__track"
-        style={{ height: height + "px" }}
-        onMouseDown={e => {
-          e.preventDefault();
-          handleAdd(e.pageY - e.target.offsetTop);
-        }}
-      >
-        {points.map((p, i) => (
-          <Point
-            key={p.id}
-            {...p}
-            initialDrag={i === selected && isDragging}
-            y={p.pos * height}
-            selected={i === selected}
-            onMove={handleMove}
-            onClone={() => dispatch(clonePoint())}
-            onSelect={() => dispatch(selectIndex(i))}
-            onRemove={() => dispatch(removePoint())}
-          />
-        ))}
+    <>
+      <div className="Gradient">
+        <div
+          className="Gradient__track"
+          style={{ height: height + "px" }}
+          onMouseDown={e => {
+            e.preventDefault();
+            handleAdd(e.pageY - e.target.offsetTop);
+          }}
+        >
+          {points.map((p, i) => (
+            <Point
+              key={p.id}
+              {...p}
+              initialDrag={i === selected && isDragging}
+              y={p.pos * height}
+              selected={i === selected}
+              onMove={handleMove}
+              onClone={() => dispatch(clonePoint())}
+              onSelect={() => dispatch(selectIndex(i))}
+              onRemove={() => dispatch(removePoint())}
+            />
+          ))}
+        </div>
+        <Canvas gradient={gradient} scale={scale} />
       </div>
-      <Canvas gradient={gradient} scale={scale} />
-    </div>
+      <div className="Gradient__zoom">
+        <label htmlFor="steps">Zoom </label>&times;{" "}
+        <input
+          id="scale"
+          type="number"
+          min={1}
+          max={20}
+          value={scale}
+          disabled={autoScale}
+          onChange={e => setScale(parseInt(e.target.value))}
+        />{" "}
+        <label>
+          <input
+            type="checkbox"
+            checked={autoScale}
+            onChange={e => setAutoScale(e.target.checked)}
+          />
+          auto
+        </label>
+      </div>
+    </>
   );
 }
 

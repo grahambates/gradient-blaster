@@ -1,21 +1,18 @@
-.Output {
-  display: flex;
-  flex-direction: column;
-}
-
 .Output__format {
-  margin-bottom: 0.75rem;
+  margin: 10px 0;
+  float: left;
 }
 
 .Output__actions {
-  margin-bottom: 0.5rem;
+  float: right;
 }
 
 .Output__actions > * {
-  margin-right: 0.5rem;
+  margin-left: 0.5rem;
 }
 
 .Output pre {
+  clear: both;
   height: 400px;
   font-size: 0.9em;
   transition: 2s;

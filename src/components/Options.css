@@ -10,7 +10,7 @@
   margin-bottom: 3px;
   white-space: nowrap;
 }
-.Options input {
+.Options input[type="number"] {
   width: 4rem;
 }
 .Options__ditherAmount {
