@@ -6,7 +6,7 @@ const urlState = decodeUrlQuery(window.location.search);
 
 const defaultState = {
   steps: 256,
-  blendMode: "perceptual",
+  blendMode: "oklab",
   ditherMode: "blueNoise",
   ditherAmount: 40
 };

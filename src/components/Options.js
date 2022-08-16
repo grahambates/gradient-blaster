@@ -36,10 +36,10 @@ function Options() {
           value={blendMode}
           onChange={e => dispatch(setBlendMode(e.target.value))}
         >
-          <option value="perceptual">Perceptual</option>
           <option value="oklab">OKLAB</option>
           <option value="lab">LAB</option>
-          <option value="linear">Linear RGB</option>
+          <option value="perceptual">Gamma adjusted RGB</option>
+          <option value="linear">Simple RGB</option>
         </select>
       </div>
 
