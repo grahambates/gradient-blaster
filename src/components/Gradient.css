@@ -5,6 +5,7 @@
 .Gradient__track {
   background-color: #eee;
   flex: 0 18px;
+  min-width: 18px;
   position: relative;
   cursor: copy;
   border: 1px solid transparent;
