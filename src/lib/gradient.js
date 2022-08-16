@@ -9,7 +9,7 @@ export function buildGradient(points, options) {
     y: Math.round(p.pos * (steps - 1)),
   }));
 
-  const values = [];
+  let values = [];
   let pointIndex = 0;
 
   for (let i = 0; i < steps; i++) {
@@ -42,6 +42,7 @@ export function buildGradient(points, options) {
             lerpTuple(conv.rgbToLab(from), conv.rgbToLab(to), pos)
           );
           break;
+        // https://bottosson.github.io/posts/oklab/#blending-colors
         case "oklab":
           mixed = conv.oklabToRgb(
             lerpTuple(conv.rgbToOklab(from), conv.rgbToOklab(to), pos)
@@ -58,7 +59,7 @@ export function buildGradient(points, options) {
   }
 
   if (ditherMode !== "off") {
-    dither(values, ditherMode, ditherAmount);
+    values = dither(values, ditherMode, ditherAmount);
   }
 
   return values.map(conv.rgb8ToRgb4);
@@ -97,9 +98,26 @@ function perceptualMix(color1, color2, pos) {
 
 function dither(values, ditherMode, ditherAmount) {
   let swappedLast = false;
+  const amount = ditherAmount / 100;
+
+  if (ditherMode === "errorDiffusion") {
+    const hsvValues = values.map(conv.rgbToLab);
+    for (let i = 0; i < hsvValues.length; i++) {
+      const col = hsvValues[i];
+      const quantised = conv.rgbToLab(conv.quantize4Bit(conv.labToRgb(col)));
+      const errH = col[0] - quantised[0];
+      const errS = col[1] - quantised[1];
+      const errV = col[2] - quantised[2];
+      if (hsvValues[i + 1]) {
+        hsvValues[i + 1][0] += errH * amount;
+        hsvValues[i + 1][1] += errS * amount;
+        hsvValues[i + 1][2] += errV * amount;
+      }
+    }
+    return hsvValues.map(conv.labToRgb);
+  }
 
   for (let i = 0; i < values.length; i++) {
-    const amount = ditherAmount / 100;
     switch (ditherMode) {
       case "shuffle": {
         if (i > 0) {
@@ -114,17 +132,6 @@ function dither(values, ditherMode, ditherAmount) {
           } else {
             swappedLast = false;
           }
-        }
-        break;
-      }
-      case "errorDiffusion": {
-        let errR = err4bit(values[i][0]);
-        let errG = err4bit(values[i][1]);
-        let errB = err4bit(values[i][2]);
-        if (values[i + 1]) {
-          values[i + 1][0] += errR * amount;
-          values[i + 1][1] += errG * amount;
-          values[i + 1][2] += errB * amount;
         }
         break;
       }
@@ -164,6 +171,7 @@ function dither(values, ditherMode, ditherAmount) {
         values[i][1] += ofs;
         values[i][2] += ofs;
         break;
+      // https://bartwronski.com/2016/10/30/dithering-part-two-golden-ratio-sequence-blue-noise-and-highpass-and-remap/comment-page-1/
       case "goldenRatio": {
         values[i][0] += (((i * GOLDEN_RATIO) % 1) - 0.5) * 17 * amount;
         values[i][1] += ((((i + 1) * GOLDEN_RATIO) % 1) - 0.5) * 17 * amount;
@@ -180,6 +188,7 @@ function dither(values, ditherMode, ditherAmount) {
       default:
     }
   }
+  return values;
 }
 
 function err4bit(val) {
