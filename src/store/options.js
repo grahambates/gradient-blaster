@@ -9,12 +9,13 @@ const defaultState = {
   blendMode: "oklab",
   ditherMode: "blueNoise",
   ditherAmount: 40,
-  shuffleCount: 2
+  shuffleCount: 2,
+  depth: 4,
 };
 
 const initialState = {
   ...defaultState,
-  ...urlState.options
+  ...urlState.options,
 };
 
 export const configSlice = createSlice({
@@ -35,13 +36,16 @@ export const configSlice = createSlice({
     },
     setShuffleCount: (state, action) => {
       state.shuffleCount = action.payload;
-    }
+    },
+    setDepth: (state, action) => {
+      state.depth = action.payload;
+    },
   },
   extraReducers: {
     [reset]() {
       return defaultState;
-    }
-  }
+    },
+  },
 });
 
 export const {
@@ -49,9 +53,10 @@ export const {
   setBlendMode,
   setDitherMode,
   setDitherAmount,
-  setShuffleCount
+  setShuffleCount,
+  setDepth,
 } = configSlice.actions;
 
-export const selectOptions = state => state.data.present.options;
+export const selectOptions = (state) => state.data.present.options;
 
 export default configSlice.reducer;

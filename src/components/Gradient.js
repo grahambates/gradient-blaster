@@ -10,7 +10,7 @@ import {
   setPos,
   selectIndex,
   selectPoints,
-  selectSelectedIndex
+  selectSelectedIndex,
 } from "../store/points";
 import { selectOptions } from "../store/options";
 import { selectGradient } from "../store";
@@ -21,7 +21,7 @@ function Gradient() {
   const points = useSelector(selectPoints);
   const selected = useSelector(selectSelectedIndex);
   const gradient = useSelector(selectGradient);
-  const { steps } = options;
+  const { steps, depth } = options;
 
   const [scale, setScale] = useState(1);
   const [autoScale, setAutoScale] = useState(true);
@@ -36,7 +36,7 @@ function Gradient() {
 
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleAdd = y => {
+  const handleAdd = (y) => {
     const scaledY = Math.round(y / scale);
     const sample = gradient[scaledY];
 
@@ -52,12 +52,12 @@ function Gradient() {
     dispatch(
       addPoint({
         pos: y / (height - 1),
-        color: conv.rgbToHsv(conv.rgb4ToRgb8(sample))
+        color: conv.rgbToHsv(sample),
       })
     );
   };
 
-  const handleMove = newY => {
+  const handleMove = (newY) => {
     const maxY = steps * scale - scale;
     const pos = conv.clamp(newY, 0, maxY) / maxY;
     dispatch(setPos(pos));
@@ -69,7 +69,7 @@ function Gradient() {
         <div
           className="Gradient__track"
           style={{ height: height + "px" }}
-          onMouseDown={e => {
+          onMouseDown={(e) => {
             e.preventDefault();
             handleAdd(e.pageY - e.target.offsetTop);
           }}
@@ -88,7 +88,7 @@ function Gradient() {
             />
           ))}
         </div>
-        <Canvas gradient={gradient} scale={scale} />
+        <Canvas gradient={gradient} scale={scale} depth={depth} />
       </div>
       <div className="Gradient__zoom">
         <label htmlFor="steps">Zoom </label>&times;{" "}
@@ -99,13 +99,13 @@ function Gradient() {
           max={20}
           value={scale}
           disabled={autoScale}
-          onChange={e => setScale(parseInt(e.target.value))}
+          onChange={(e) => setScale(parseInt(e.target.value))}
         />{" "}
         <label>
           <input
             type="checkbox"
             checked={autoScale}
-            onChange={e => setAutoScale(e.target.checked)}
+            onChange={(e) => setAutoScale(e.target.checked)}
           />
           auto
         </label>
@@ -114,7 +114,7 @@ function Gradient() {
   );
 }
 
-function Canvas({ gradient, scale }) {
+function Canvas({ gradient, scale, depth }) {
   const width = 512;
   const canvasRef = useRef(null);
   const steps = gradient.length;
@@ -124,10 +124,14 @@ function Canvas({ gradient, scale }) {
     const ctx = canvasRef.current?.getContext("2d");
 
     for (let i = 0; i < steps; i++) {
-      ctx.fillStyle = conv.rgbCssProp(conv.rgb4ToRgb8(gradient[i]));
+      let col = gradient[i];
+      if (depth === 4) {
+        col = conv.quantize4Bit(col);
+      }
+      ctx.fillStyle = conv.rgbCssProp(col);
       ctx.fillRect(0, i * scale, width, scale);
     }
-  }, [steps, scale, gradient]);
+  }, [steps, scale, depth, gradient]);
 
   return (
     <canvas

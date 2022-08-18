@@ -168,8 +168,30 @@ export function rgb4ToHex(rgb) {
   return rgb.map((v) => v.toString(16)).join("");
 }
 
+export function rgb8ToHex(rgb) {
+  return normalizeRgb(rgb)
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export function hexPair(rgb) {
+  const hex = rgb8ToHex(rgb);
+  const pair = [hex[0] + hex[2] + hex[4], hex[1] + hex[3] + hex[5]];
+  return pair;
+}
+
 export function hexToRgb4(hex) {
   return hex.split("").map((v) => parseInt(v, 16));
+}
+
+export function hexToRgb8(hex) {
+  return [hex.substring(0, 2), hex.substring(2, 4), hex.substring(4, 6)].map(
+    (v) => parseInt(v, 16)
+  );
+}
+
+export function hexToRgb(hex) {
+  return hex.length === 3 ? rgb4ToRgb8(hexToRgb4(hex)) : hexToRgb8(hex);
 }
 
 export function clamp(value, min = 0, max = 1) {
@@ -177,7 +199,7 @@ export function clamp(value, min = 0, max = 1) {
 }
 
 export function sameColors(a, b) {
-  return a.join(",") === b.join(",");
+  return a && b && a.join(",") === b.join(",");
 }
 
 export const lrgbToRgb = (col) => {
@@ -199,6 +221,10 @@ export const rgbToLrgb = (col) => {
     return (Math.sign(c) || 1) * Math.pow((abs + 0.055) / 1.055, 2.4);
   });
 };
+
+export function normalizeRgb(rgb) {
+  return rgb.map((c) => Math.round(clamp(c, 0, 255)));
+}
 
 export function rgbToOklab(col) {
   const [r, g, b] = rgbToLrgb(col);

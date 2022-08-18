@@ -16,7 +16,7 @@ const swatches = [
     "6cc",
     "7df",
     "aaf",
-    "faf"
+    "faf",
   ],
   [
     "333",
@@ -30,7 +30,7 @@ const swatches = [
     "1aa",
     "09e",
     "76f",
-    "f2f"
+    "f2f",
   ],
   [
     "000",
@@ -44,28 +44,28 @@ const swatches = [
     "077",
     "06b",
     "639",
-    "a19"
-  ]
-].map(row => row.map(conv.hexToRgb4));
+    "a19",
+  ],
+].map((row) => row.map(conv.hexToRgb4));
 
-const Picker = React.memo(({ hsv, onChange }) => {
-  const setRgb4 = newRgb4 => {
+const Picker = React.memo(({ hsv, depth, onChange }) => {
+  const setRgb4 = (newRgb4) => {
     onChange(conv.rgbToHsv(conv.rgb4ToRgb8(newRgb4)));
   };
 
   return (
     <div className="Picker">
-      <PickerSquare hsv={hsv} onChange={onChange} />
+      <PickerSquare hsv={hsv} depth={depth} onChange={onChange} />
       <HueStrip hsv={hsv} onChange={onChange} />
       <div className="Picker__swatches">
         {swatches.map((row, i) => (
           <div key={i} className="Picker__swatchesRow">
-            {row.map(rgb4 => (
+            {row.map((rgb4) => (
               <button
                 key={rgb4}
                 className="Picker__swatch"
                 style={{
-                  background: conv.rgbCssProp(conv.rgb4ToRgb8(rgb4))
+                  background: conv.rgbCssProp(conv.rgb4ToRgb8(rgb4)),
                 }}
                 onClick={() => setRgb4(rgb4)}
               />
@@ -77,7 +77,7 @@ const Picker = React.memo(({ hsv, onChange }) => {
   );
 });
 
-const PickerSquare = ({ hsv, onChange }) => {
+const PickerSquare = ({ hsv, depth, onChange }) => {
   const width = 256;
   const height = 256;
   const canvasRef = useRef(null);
@@ -94,7 +94,9 @@ const PickerSquare = ({ hsv, onChange }) => {
         const s1 = y / (height - 1);
         const v1 = 1 - x / (width - 1);
         let color = conv.hsvToRgb([h, s1, v1]);
-        color = conv.quantize4Bit(color);
+        if (depth === 4) {
+          color = conv.quantize4Bit(color);
+        }
         const [r, g, b] = color;
 
         imageData.data[i++] = r;
@@ -105,14 +107,14 @@ const PickerSquare = ({ hsv, onChange }) => {
     }
 
     ctx.putImageData(imageData, 0, 0);
-  }, [h]);
+  }, [h, depth]);
 
   const handleMouseDown = useCallback(
-    e => {
+    (e) => {
       const maxX = width - 1;
       const maxY = height - 1;
 
-      const dragMove = e => {
+      const dragMove = (e) => {
         e.stopPropagation();
         const y = e.pageY - canvasRef.current.offsetParent.offsetTop;
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
@@ -177,10 +179,10 @@ const HueStrip = ({ hsv, onChange }) => {
   }, []);
 
   const handleMouseDown = useCallback(
-    e => {
+    (e) => {
       const maxX = width - 1;
 
-      const dragMove = e => {
+      const dragMove = (e) => {
         e.stopPropagation();
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
         const h1 = conv.clamp(x / maxX);

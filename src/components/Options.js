@@ -8,13 +8,15 @@ import {
   setDitherMode,
   setDitherAmount,
   setShuffleCount,
-  selectOptions
+  selectOptions,
+  setDepth,
 } from "../store/options";
 
 function Options() {
   const dispatch = useDispatch();
   const options = useSelector(selectOptions);
-  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount } = options;
+  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, depth } =
+    options;
 
   return (
     <div className="Options">
@@ -26,7 +28,7 @@ function Options() {
           min={2}
           max={2000}
           value={steps}
-          onChange={e => dispatch(setSteps(parseInt(e.target.value)))}
+          onChange={(e) => dispatch(setSteps(parseInt(e.target.value)))}
         />
       </div>
 
@@ -35,7 +37,7 @@ function Options() {
         <select
           id="blendMode"
           value={blendMode}
-          onChange={e => dispatch(setBlendMode(e.target.value))}
+          onChange={(e) => dispatch(setBlendMode(e.target.value))}
         >
           <option value="oklab">OKLAB</option>
           <option value="lab">LAB</option>
@@ -45,11 +47,23 @@ function Options() {
       </div>
 
       <div>
+        <label htmlFor="depth">Depth: </label>
+        <select
+          id="depth"
+          value={depth}
+          onChange={(e) => dispatch(setDepth(parseInt(e.target.value)))}
+        >
+          <option value="4">OCS/ECS</option>
+          <option value="8">AGA</option>
+        </select>
+      </div>
+
+      <div>
         <label htmlFor="ditherMode">Dither mode: </label>
         <select
           id="ditherMode"
           value={ditherMode}
-          onChange={e => dispatch(setDitherMode(e.target.value))}
+          onChange={(e) => dispatch(setDitherMode(e.target.value))}
         >
           <option value="off">Off</option>
           <option value="shuffle">Shuffle</option>
@@ -74,7 +88,9 @@ function Options() {
             min={0}
             max={100}
             value={ditherAmount}
-            onChange={e => dispatch(setDitherAmount(parseInt(e.target.value)))}
+            onChange={(e) =>
+              dispatch(setDitherAmount(parseInt(e.target.value)))
+            }
           />
           <input
             id="ditherAmount"
@@ -83,7 +99,9 @@ function Options() {
             min={0}
             max={100}
             value={ditherAmount}
-            onChange={e => dispatch(setDitherAmount(parseInt(e.target.value)))}
+            onChange={(e) =>
+              dispatch(setDitherAmount(parseInt(e.target.value)))
+            }
           />{" "}
           %
         </div>
@@ -99,7 +117,9 @@ function Options() {
             min={1}
             max={5}
             value={shuffleCount}
-            onChange={e => dispatch(setShuffleCount(parseInt(e.target.value)))}
+            onChange={(e) =>
+              dispatch(setShuffleCount(parseInt(e.target.value)))
+            }
           />
         </div>
       )}

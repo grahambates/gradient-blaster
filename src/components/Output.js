@@ -8,14 +8,16 @@ import { FaCopy, FaDownload } from "react-icons/fa";
 
 import "./Output.css";
 import * as conv from "../lib/colorConvert";
+import * as output from "../lib/output";
 import { selectGradient, selectPresentData } from "../store";
+import { selectOptions } from "../store/options";
 import { encodeUrlQuery } from "../lib/url";
 import Button from "./Button";
 
 SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
 SyntaxHighlighter.registerLanguage("c", c);
 
-const DEBOUNCE_DELAY = 50;
+const DEBOUNCE_DELAY = 300;
 
 const baseUrl = window.location.href.split("?")[0];
 
@@ -23,6 +25,7 @@ function Output() {
   const [outputFormat, setOutputFormat] = useState("copperList");
   const present = useSelector(selectPresentData);
   const gradient = useSelector(selectGradient);
+  const { depth } = useSelector(selectOptions);
 
   // Delay update to output for performance i.e. dont generate 1000s of times while dragging
   const [debouncedGradient, setDebouncedGradient] = useState(gradient);
@@ -46,7 +49,7 @@ function Output() {
         <select
           id="Output-format"
           value={outputFormat}
-          onChange={e => setOutputFormat(e.target.value)}
+          onChange={(e) => setOutputFormat(e.target.value)}
         >
           <option value="copperList">Copper list</option>
           <option value="paletteAsm">Palette: asm</option>
@@ -56,35 +59,44 @@ function Output() {
         </select>
       </div>
       {outputFormat === "copperList" && (
-        <CopperList gradient={debouncedGradient} query={debouncedQuery} />
+        <CopperList
+          gradient={debouncedGradient}
+          query={debouncedQuery}
+          depth={depth}
+        />
       )}
       {outputFormat === "paletteAsm" && (
-        <PaletteAsm gradient={debouncedGradient} query={debouncedQuery} />
+        <PaletteAsm
+          gradient={debouncedGradient}
+          query={debouncedQuery}
+          depth={depth}
+        />
       )}
       {outputFormat === "paletteC" && (
-        <PaletteC gradient={debouncedGradient} query={debouncedQuery} />
+        <PaletteC
+          gradient={debouncedGradient}
+          query={debouncedQuery}
+          depth={depth}
+        />
       )}
       {outputFormat === "paletteBin" && (
-        <PaletteBin gradient={debouncedGradient} />
+        <PaletteBin gradient={debouncedGradient} depth={depth} />
       )}
-      {outputFormat === "imagePng" && <ImagePng gradient={gradient} />}
+      {outputFormat === "imagePng" && (
+        <ImagePng gradient={debouncedGradient} depth={depth} />
+      )}
     </div>
   );
 }
 
-const formatPaletteAsm = (values, { rowSize = 16, label = "Gradient" }) => {
-  let output = label ? label + ":" : "";
-  for (let i in values) {
-    output += i % rowSize ? "," : `\n\tdc.w `;
-    output += "$" + conv.rgb4ToHex(values[i]);
-  }
-  return output;
-};
-
-const PaletteAsm = React.memo(({ gradient, query }) => {
+const PaletteAsm = React.memo(({ gradient, query, depth }) => {
   const [rowSize, setRowSize] = useState(8);
-  const [varName, setVarName] = useState("Gradient");
-  const formatted = formatPaletteAsm(gradient, { rowSize });
+  const [label, setLabel] = useState("Gradient");
+  const formatted = output.formatPaletteAsm(gradient, {
+    rowSize,
+    depth,
+    label,
+  });
   const code = "; " + baseUrl + query + "\n" + formatted;
 
   return (
@@ -104,16 +116,16 @@ const PaletteAsm = React.memo(({ gradient, query }) => {
             min="1"
             max="1000"
             value={rowSize}
-            onChange={e => setRowSize(e.target.value)}
+            onChange={(e) => setRowSize(e.target.value)}
           />
         </div>
         <div>
-          <label htmlFor="Output-varName">Label: </label>
+          <label htmlFor="Output-label">Label: </label>
           <input
-            id="Output-varName"
+            id="Output-label"
             type="text"
-            value={varName}
-            onChange={e => setVarName(e.target.value)}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
           />
         </div>
       </div>
@@ -121,19 +133,14 @@ const PaletteAsm = React.memo(({ gradient, query }) => {
   );
 });
 
-const formatPaletteC = (values, { rowSize = 16, varName = "gradient" }) => {
-  let output = `unsigned short ${varName}[${values.length}] = {`;
-  for (let i in values) {
-    if (!(i % rowSize)) output += "\n\t";
-    output += "0x" + conv.rgb4ToHex(values[i]) + ",";
-  }
-  return output + "\n};";
-};
-
-const PaletteC = React.memo(({ gradient, query }) => {
+const PaletteC = React.memo(({ gradient, query, depth }) => {
   const [rowSize, setRowSize] = useState(8);
   const [varName, setVarName] = useState("gradient");
-  const formatted = formatPaletteC(gradient, { rowSize, varName });
+  const formatted = output.formatPaletteC(gradient, {
+    rowSize,
+    varName,
+    depth,
+  });
   const code = "// " + baseUrl + query + "\n" + formatted;
 
   return (
@@ -153,7 +160,7 @@ const PaletteC = React.memo(({ gradient, query }) => {
             min="1"
             max="1000"
             value={rowSize}
-            onChange={e => setRowSize(e.target.value)}
+            onChange={(e) => setRowSize(e.target.value)}
           />
         </div>
         <div>
@@ -162,7 +169,7 @@ const PaletteC = React.memo(({ gradient, query }) => {
             id="Output-varName"
             type="text"
             value={varName}
-            onChange={e => setVarName(e.target.value)}
+            onChange={(e) => setVarName(e.target.value)}
           />
         </div>
       </div>
@@ -170,27 +177,12 @@ const PaletteC = React.memo(({ gradient, query }) => {
   );
 });
 
-const gradientToBytes = gradient => {
-  const bytes = new Uint8Array(gradient.length * 2);
-  let i = 0;
-  for (const [r, g, b] of gradient) {
-    bytes[i++] = r;
-    bytes[i++] = (g << 4) + b;
-  }
-  return bytes;
-};
-
-const base64Encode = bytes =>
-  window.btoa(
-    bytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
-  );
-
-const PaletteBin = React.memo(({ gradient }) => {
-  const bytes = gradientToBytes(gradient);
+const PaletteBin = React.memo(({ gradient, depth }) => {
+  const bytes = output.gradientToBytes(gradient, depth);
   return (
     <div className="Output__actions">
       <DownloadLink
-        data={base64Encode(bytes)}
+        data={output.base64Encode(bytes)}
         filename="gradient.bin"
         mimetype="application/octet-stream;base64"
       />
@@ -198,53 +190,20 @@ const PaletteBin = React.memo(({ gradient }) => {
   );
 });
 
-function buildCopperList(
-  gradient,
-  { startLine = 0x2b, varName, colorIndex, waitStart, endList }
-) {
-  const hexCodes = gradient.map(conv.rgb4ToHex);
-  const colorReg = "$" + (0x180 + colorIndex).toString(16);
-  let output = [];
-  if (varName) {
-    output.push(varName + ":");
-  }
-
-  let lastCol;
-  let line = startLine;
-  for (const hex of hexCodes) {
-    if (lastCol !== hex) {
-      const l = (line & 0xff).toString(16);
-      if (line > startLine || waitStart) {
-        output.push(`\tdc.w $${l}07,$fffe`);
-      }
-      output.push(`\tdc.w ${colorReg},$${hex}`);
-    }
-    // PAL fix
-    if (line === 0xff) {
-      output.push(`\tdc.w $ffdf,$fffe ; PAL fix`);
-    }
-    lastCol = hex;
-    line++;
-  }
-  if (endList) {
-    output.push(`\tdc.w $ffff,$fffe ; End copper list`);
-  }
-  return output.join("\n");
-}
-
-const CopperList = React.memo(({ gradient, query }) => {
+const CopperList = React.memo(({ gradient, query, depth }) => {
   const [startLine, setStartLine] = useState(0x2b);
   const [colorIndex, setColorIndex] = useState(0);
   const [varName, setVarName] = useState("Gradient");
   const [waitStart, setWaitStart] = useState(true);
   const [endList, setEndList] = useState(true);
 
-  const formatted = buildCopperList(gradient, {
+  const formatted = output.buildCopperList(gradient, {
     varName,
     colorIndex,
     startLine,
     waitStart,
-    endList
+    endList,
+    depth,
   });
   const code = "; " + baseUrl + query + "\n" + formatted;
 
@@ -263,7 +222,7 @@ const CopperList = React.memo(({ gradient, query }) => {
             id="Output-startLine"
             type="text"
             value={startLine ? startLine.toString(16) : ""}
-            onChange={e => setStartLine(parseInt(e.target.value, 16))}
+            onChange={(e) => setStartLine(parseInt(e.target.value, 16))}
           />
         </div>
         <div>
@@ -274,7 +233,7 @@ const CopperList = React.memo(({ gradient, query }) => {
             min="0"
             max="31"
             value={colorIndex}
-            onChange={e => setColorIndex(parseInt(e.target.value))}
+            onChange={(e) => setColorIndex(parseInt(e.target.value))}
           />
         </div>
         <div>
@@ -282,7 +241,7 @@ const CopperList = React.memo(({ gradient, query }) => {
             <input
               type="checkbox"
               checked={waitStart}
-              onChange={e => setWaitStart(e.target.checked)}
+              onChange={(e) => setWaitStart(e.target.checked)}
             />{" "}
             Wait for start
           </label>
@@ -291,7 +250,7 @@ const CopperList = React.memo(({ gradient, query }) => {
             <input
               type="checkbox"
               checked={endList}
-              onChange={e => setEndList(e.target.checked)}
+              onChange={(e) => setEndList(e.target.checked)}
             />{" "}
             End copper list
           </label>
@@ -302,7 +261,7 @@ const CopperList = React.memo(({ gradient, query }) => {
             id="Output-varName"
             type="text"
             value={varName}
-            onChange={e => setVarName(e.target.value)}
+            onChange={(e) => setVarName(e.target.value)}
           />
         </div>
       </div>
@@ -310,7 +269,7 @@ const CopperList = React.memo(({ gradient, query }) => {
   );
 });
 
-function ImagePng({ gradient }) {
+function ImagePng({ gradient, depth }) {
   const [width, setWidth] = useState(gradient.length);
   const canvasRef = useRef(null);
   const [data, setData] = useState();
@@ -318,11 +277,15 @@ function ImagePng({ gradient }) {
   useEffect(() => {
     const ctx = canvasRef.current.getContext("2d");
     for (let i = 0; i < gradient.length; i++) {
-      ctx.fillStyle = conv.rgbCssProp(conv.rgb4ToRgb8(gradient[i]));
+      let color = gradient[i];
+      if (depth === 4) {
+        color = conv.quantize4Bit(color);
+      }
+      ctx.fillStyle = conv.rgbCssProp(color);
       ctx.fillRect(0, i, width, i);
     }
     setData(canvasRef.current.toDataURL());
-  }, [gradient, width]);
+  }, [gradient, width, depth]);
 
   return (
     <>
@@ -344,7 +307,7 @@ function ImagePng({ gradient }) {
             min="1"
             max="3000"
             value={width}
-            onChange={e => setWidth(parseInt(e.target.value))}
+            onChange={(e) => setWidth(parseInt(e.target.value))}
           />
         </span>
       </div>
@@ -372,7 +335,7 @@ function CopyLink({ code }) {
 function DownloadLink({
   data,
   filename,
-  mimetype = "text/plain;charset=utf-8"
+  mimetype = "text/plain;charset=utf-8",
 }) {
   const codeHref = `data:${mimetype},` + encodeURIComponent(data);
   return (

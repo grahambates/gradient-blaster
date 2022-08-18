@@ -3,11 +3,15 @@ import * as conv from "./colorConvert";
 const GOLDEN_RATIO = 1.61803399;
 
 export function buildGradient(points, options) {
-  const { steps, blendMode, ditherMode, ditherAmount } = options;
-  const mappedPoints = [...points].map((p) => ({
-    color: conv.quantize4Bit(conv.hsvToRgb(p.color)),
-    y: Math.round(p.pos * (steps - 1)),
-  }));
+  const { steps, blendMode, ditherMode } = options;
+  const mappedPoints = [...points].map((p) => {
+    let color = conv.hsvToRgb(p.color);
+    if (options.depth === 4) {
+      color = conv.quantize4Bit(color);
+    }
+    const y = Math.round(p.pos * (steps - 1));
+    return { y, color };
+  });
 
   let values = [];
   let pointIndex = 0;
@@ -62,7 +66,7 @@ export function buildGradient(points, options) {
     values = dither(values, options);
   }
 
-  return values.map(conv.rgb8ToRgb4);
+  return values.map(conv.normalizeRgb);
 }
 
 // https://stackoverflow.com/questions/22607043/color-gradient-algorithm
@@ -96,25 +100,33 @@ function perceptualMix(color1, color2, pos) {
   return mixed.map(conv.linearToSrgb);
 }
 
-function dither(values, { ditherMode, ditherAmount, shuffleCount }) {
-  const amount = ditherAmount / 100;
+function dither(values, { ditherMode, ditherAmount, shuffleCount, depth }) {
+  if (ditherMode === "off") {
+    return values;
+  }
+
+  let amount = ditherAmount / 100;
+
+  const outputFn = depth === 4 ? conv.quantize4Bit : conv.normalizeRgb;
 
   if (ditherMode === "errorDiffusion") {
-    const hsvValues = values.map(conv.rgbToLab);
-    for (let i = 0; i < hsvValues.length; i++) {
-      const col = hsvValues[i];
-      const quantised = conv.rgbToLab(conv.quantize4Bit(conv.labToRgb(col)));
-      const errH = col[0] - quantised[0];
-      const errS = col[1] - quantised[1];
-      const errV = col[2] - quantised[2];
-      if (hsvValues[i + 1]) {
-        hsvValues[i + 1][0] += errH * amount;
-        hsvValues[i + 1][1] += errS * amount;
-        hsvValues[i + 1][2] += errV * amount;
+    const labValues = values.map(conv.rgbToLab);
+    for (let i = 0; i < labValues.length; i++) {
+      const col = labValues[i];
+      const quantised = conv.rgbToLab(outputFn(conv.labToRgb(col)));
+      const errL = col[0] - quantised[0];
+      const errA = col[1] - quantised[1];
+      const errB = col[2] - quantised[2];
+      if (labValues[i + 1]) {
+        labValues[i + 1][0] += errL * amount;
+        labValues[i + 1][1] += errA * amount;
+        labValues[i + 1][2] += errB * amount;
       }
     }
-    return hsvValues.map(conv.labToRgb);
+    return labValues.map(conv.labToRgb);
   }
+
+  const sameOutput = (a, b) => conv.sameColors(outputFn(a), outputFn(b));
 
   for (let i = 0; i < values.length; i++) {
     switch (ditherMode) {
@@ -122,7 +134,7 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount }) {
         if (i > 0) {
           const prev = values[i - 1];
           const current = values[i];
-          if (!same4bit(prev, current)) {
+          if (!sameOutput(prev, current)) {
             // First shuffle
             values[i - 1] = values[i];
             values[i] = prev;
@@ -133,9 +145,9 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount }) {
               let n = (j + 1) * 4;
               if (
                 values[i + 1] &&
-                same4bit(current, values[i + 1]) &&
+                sameOutput(current, values[i + 1]) &&
                 values[i - n] &&
-                same4bit(prev, values[i - n])
+                sameOutput(prev, values[i - n])
               ) {
                 values[i - n] = current;
                 values[i + 1] = prev;
@@ -201,9 +213,6 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount }) {
   }
   return values;
 }
-
-const same4bit = (a, b) =>
-  conv.sameColors(conv.rgb8ToRgb4(a), conv.rgb8ToRgb4(b));
 
 function lerpTuple(from, to, pos) {
   const ret = [
