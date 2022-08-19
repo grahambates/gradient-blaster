@@ -4,6 +4,7 @@ import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import asmatmel from "react-syntax-highlighter/dist/esm/languages/prism/asmatmel";
 import c from "react-syntax-highlighter/dist/esm/languages/prism/c";
+import vbnet from "react-syntax-highlighter/dist/esm/languages/prism/vbnet";
 import { FaCopy, FaDownload } from "react-icons/fa";
 
 import "./Output.css";
@@ -16,6 +17,7 @@ import Button from "./Button";
 
 SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
 SyntaxHighlighter.registerLanguage("c", c);
+SyntaxHighlighter.registerLanguage("vbnet", vbnet);
 
 const DEBOUNCE_DELAY = 300;
 
@@ -54,6 +56,7 @@ function Output() {
           <option value="copperList">Copper list</option>
           <option value="paletteAsm">Palette: asm</option>
           <option value="paletteC">Palette: C</option>
+          <option value="paletteAmos">Palette: AMOS</option>
           <option value="paletteBin">Palette: binary</option>
           <option value="imagePng">PNG Image</option>
         </select>
@@ -74,6 +77,13 @@ function Output() {
       )}
       {outputFormat === "paletteC" && (
         <PaletteC
+          gradient={debouncedGradient}
+          query={debouncedQuery}
+          depth={depth}
+        />
+      )}
+      {outputFormat === "paletteAmos" && (
+        <PaletteAmos
           gradient={debouncedGradient}
           query={debouncedQuery}
           depth={depth}
@@ -170,6 +180,52 @@ const PaletteC = React.memo(({ gradient, query, depth }) => {
             type="text"
             value={varName}
             onChange={(e) => setVarName(e.target.value)}
+          />
+        </div>
+      </div>
+    </>
+  );
+});
+
+const PaletteAmos = React.memo(({ gradient, query, depth }) => {
+  const [rowSize, setRowSize] = useState(8);
+  const [label, setLabel] = useState("Gradient");
+  const formatted = output
+    .formatPaletteAsm(gradient, {
+      rowSize,
+      label,
+      depth,
+    })
+    .replace(/\tdc.w/g, "Data");
+  const code = "Rem " + baseUrl + query + "\n" + formatted;
+
+  return (
+    <>
+      <div className="Output__actions">
+        <CopyLink code={code} />
+        <DownloadLink data={code} filename="gradient-amos.txt" />
+      </div>
+      <Code language="vbnet" code={code} />
+
+      <div className="Output__formatOptions">
+        <div>
+          <label htmlFor="Output-rowSize">Values per row: </label>
+          <input
+            id="Output-rowSize"
+            type="number"
+            min="1"
+            max="1000"
+            value={rowSize}
+            onChange={(e) => setRowSize(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="Output-varName">Variable name: </label>
+          <input
+            id="Output-varName"
+            type="text"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
           />
         </div>
       </div>
