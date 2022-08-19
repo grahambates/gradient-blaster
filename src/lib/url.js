@@ -30,24 +30,26 @@ export const decodeUrlQuery = (query) => {
     depth,
   } = qs.parse(query.substring(1));
   const options = {
-    steps,
+    steps: intVal(steps),
     blendMode,
     ditherMode,
-    ditherAmount,
-    shuffleCount,
-    depth,
+    ditherAmount: intVal(ditherAmount),
+    shuffleCount: intVal(shuffleCount),
+    depth: intVal(depth),
   };
-  // Remove undefine
+  // Remove undefined
   Object.keys(options).forEach((key) => {
     if (options[key] === undefined) {
       delete options[key];
     }
   });
   return {
-    points: points && steps && decodePoints(points, steps),
+    points: points && steps && decodePoints(points, options.steps),
     options,
   };
 };
+
+const intVal = (str) => str && parseInt(str);
 
 const encodePoints = (points, steps, depth) =>
   points
