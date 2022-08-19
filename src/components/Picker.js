@@ -46,13 +46,9 @@ const swatches = [
     "639",
     "a19",
   ],
-].map((row) => row.map(conv.hexToRgb4));
+].map((row) => row.map(conv.decodeHex3).map((c) => conv.restoreBits(c, 4)));
 
 const Picker = React.memo(({ hsv, depth, onChange }) => {
-  const setRgb4 = (newRgb4) => {
-    onChange(conv.rgbToHsv(conv.rgb4ToRgb8(newRgb4)));
-  };
-
   return (
     <div className="Picker">
       <PickerSquare hsv={hsv} depth={depth} onChange={onChange} />
@@ -60,16 +56,16 @@ const Picker = React.memo(({ hsv, depth, onChange }) => {
       <div className="Picker__swatches">
         {swatches.map((row, i) => (
           <div key={i} className="Picker__swatchesRow">
-            {row.map((rgb4) => (
-              <button
-                key={rgb4}
-                className="Picker__swatch"
-                style={{
-                  background: conv.rgbCssProp(conv.rgb4ToRgb8(rgb4)),
-                }}
-                onClick={() => setRgb4(rgb4)}
-              />
-            ))}
+            {row.map((rgb) => {
+              return (
+                <button
+                  key={rgb}
+                  className="Picker__swatch"
+                  style={{ background: conv.rgbCssProp(rgb) }}
+                  onClick={() => onChange(conv.rgbToHsv(rgb))}
+                />
+              );
+            })}
           </div>
         ))}
       </div>
@@ -94,9 +90,7 @@ const PickerSquare = ({ hsv, depth, onChange }) => {
         const s1 = y / (height - 1);
         const v1 = 1 - x / (width - 1);
         let color = conv.hsvToRgb([h, s1, v1]);
-        if (depth === 4) {
-          color = conv.quantize4Bit(color);
-        }
+        color = conv.quantize(color, depth);
         const [r, g, b] = color;
 
         imageData.data[i++] = r;

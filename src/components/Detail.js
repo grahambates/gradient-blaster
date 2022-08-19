@@ -13,14 +13,15 @@ import {
   previousPoint,
   nextPoint,
 } from "../store/points";
-import { selectOptions } from "../store/options";
+import { selectOptions, selectDepth } from "../store/options";
 import { clamp } from "../lib/colorConvert";
 import Picker from "./Picker";
 import Button from "./Button";
 
 function Detail() {
   const dispatch = useDispatch();
-  const { steps, depth } = useSelector(selectOptions);
+  const { steps } = useSelector(selectOptions);
+  const depth = useSelector(selectDepth);
   const points = useSelector(selectPoints);
   const selectedIndex = useSelector(selectSelectedIndex);
 
@@ -34,25 +35,17 @@ function Detail() {
 
   const [hex, setHex] = useState();
 
-  const setRgb4 = (newRgb4) => {
-    dispatch(setColor(conv.rgbToHsv(conv.rgb4ToRgb8(newRgb4))));
-  };
-  const setRgb = (newRgb) => {
-    dispatch(setColor(conv.rgbToHsv(newRgb)));
-  };
-
   useEffect(() => {
-    const rgb = conv.hsvToRgb(selectedPoint.color);
-    if (depth === 4) {
-      const rgb4 = conv.rgb8ToRgb4(rgb);
-      setHex(conv.rgb4ToHex(rgb4));
+    const rgb = conv.reduceBits(conv.hsvToRgb(selectedPoint.color), depth);
+    if (depth <= 4) {
+      setHex(conv.encodeHex3(rgb));
     } else {
-      setHex(conv.rgb8ToHex(rgb));
+      setHex(conv.encodeHex6(rgb));
     }
   }, [selectedPoint.color, depth]);
 
   const rgb = conv.hsvToRgb(selectedPoint.color);
-  const color = conv.rgbCssProp(conv.quantize4Bit(rgb));
+  const color = conv.rgbCssProp(conv.quantize(rgb, depth));
   const light = conv.luminance(rgb) > 128;
 
   const classes = ["Detail__header"];
@@ -64,6 +57,15 @@ function Detail() {
     (color) => dispatch(setColor(color)),
     [dispatch]
   );
+
+  let hexPattern;
+  if (depth === 3) {
+    hexPattern = "[0-7]{3}";
+  } else if (depth === 4) {
+    hexPattern = "[0-9a-f]{3}";
+  } else {
+    hexPattern = "[0-9a-f]{6}";
+  }
 
   return (
     <section className="Detail">
@@ -105,17 +107,22 @@ function Detail() {
               type="text"
               className="Detail__hexInput"
               value={hex}
-              maxLength={depth === 4 ? 3 : 6}
+              maxLength={depth <= 4 ? 3 : 6}
+              pattern={hexPattern}
               onChange={(e) => {
                 const newHex = e.target.value;
                 setHex(newHex);
-                if (depth === 4 && newHex.match(/^[0-9a-f]{3}$/i)) {
-                  const newRgb4 = conv.hexToRgb4(newHex);
-                  setRgb4(newRgb4);
+                if (!newHex || e.target.validity.patternMismatch) {
+                  return;
                 }
-                if (depth === 8 && newHex.match(/^[0-9a-f]{6}$/i)) {
-                  const newRgb = conv.hexToRgb8(newHex);
-                  setRgb(newRgb);
+                if (depth <= 4) {
+                  const newRgb = conv.decodeHex3(newHex);
+                  dispatch(
+                    setColor(conv.rgbToHsv(conv.restoreBits(newRgb, depth)))
+                  );
+                } else {
+                  const newRgb = conv.decodeHex6(newHex);
+                  dispatch(setColor(conv.rgbToHsv(newRgb)));
                 }
               }}
             />

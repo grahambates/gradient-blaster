@@ -12,16 +12,16 @@ import {
   selectPoints,
   selectSelectedIndex,
 } from "../store/points";
-import { selectOptions } from "../store/options";
+import { selectOptions, selectDepth } from "../store/options";
 import { selectGradient } from "../store";
 
 function Gradient() {
   const dispatch = useDispatch();
-  const options = useSelector(selectOptions);
+  const { steps } = useSelector(selectOptions);
   const points = useSelector(selectPoints);
   const selected = useSelector(selectSelectedIndex);
   const gradient = useSelector(selectGradient);
-  const { steps, depth } = options;
+  const depth = useSelector(selectDepth);
 
   const [scale, setScale] = useState(1);
   const [autoScale, setAutoScale] = useState(true);
@@ -80,6 +80,7 @@ function Gradient() {
               {...p}
               initialDrag={i === selected && isDragging}
               y={p.pos * height}
+              depth={depth}
               selected={i === selected}
               onMove={handleMove}
               onClone={() => dispatch(clonePoint())}
@@ -125,9 +126,7 @@ function Canvas({ gradient, scale, depth }) {
 
     for (let i = 0; i < steps; i++) {
       let col = gradient[i];
-      if (depth === 4) {
-        col = conv.quantize4Bit(col);
-      }
+      col = conv.quantize(col, depth);
       ctx.fillStyle = conv.rgbCssProp(col);
       ctx.fillRect(0, i * scale, width, scale);
     }

@@ -11,7 +11,7 @@ import "./Output.css";
 import * as conv from "../lib/colorConvert";
 import * as output from "../lib/output";
 import { selectGradient, selectPresentData } from "../store";
-import { selectOptions } from "../store/options";
+import { selectTarget } from "../store/options";
 import { encodeUrlQuery } from "../lib/url";
 import Button from "./Button";
 
@@ -27,12 +27,13 @@ function Output() {
   const [outputFormat, setOutputFormat] = useState("copperList");
   const present = useSelector(selectPresentData);
   const gradient = useSelector(selectGradient);
-  const { depth } = useSelector(selectOptions);
+  const target = useSelector(selectTarget);
 
   // Delay update to output for performance i.e. dont generate 1000s of times while dragging
   const [debouncedGradient, setDebouncedGradient] = useState(gradient);
   const [debouncedQuery, setDebouncedQuery] = useState(encodeUrlQuery(present));
   const timeout = useRef(0);
+
   useEffect(() => {
     if (timeout.current) clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
@@ -44,6 +45,10 @@ function Output() {
     }, DEBOUNCE_DELAY);
   }, [present, gradient]);
 
+  useEffect(() => {
+    setOutputFormat(target.outputs[0]);
+  }, [target]);
+
   return (
     <div className="Output">
       <div className="Output__format">
@@ -53,58 +58,58 @@ function Output() {
           value={outputFormat}
           onChange={(e) => setOutputFormat(e.target.value)}
         >
-          <option value="copperList">Copper list</option>
-          <option value="paletteAsm">Palette: asm</option>
-          <option value="paletteC">Palette: C</option>
-          <option value="paletteAmos">Palette: AMOS</option>
-          <option value="paletteBin">Palette: binary</option>
-          <option value="imagePng">PNG Image</option>
+          {target.outputs.map((key) => (
+            <option value={key} key={key}>
+              {output.formats[key].label}
+            </option>
+          ))}
         </select>
       </div>
       {outputFormat === "copperList" && (
         <CopperList
           gradient={debouncedGradient}
           query={debouncedQuery}
-          depth={depth}
+          target={target}
         />
       )}
       {outputFormat === "paletteAsm" && (
         <PaletteAsm
           gradient={debouncedGradient}
           query={debouncedQuery}
-          depth={depth}
+          target={target}
         />
       )}
       {outputFormat === "paletteC" && (
         <PaletteC
           gradient={debouncedGradient}
           query={debouncedQuery}
-          depth={depth}
+          target={target}
         />
       )}
-      {outputFormat === "paletteAmos" && (
+      {(outputFormat === "paletteAmos" || outputFormat === "paletteStos") && (
         <PaletteAmos
           gradient={debouncedGradient}
           query={debouncedQuery}
-          depth={depth}
+          target={target}
         />
       )}
       {outputFormat === "paletteBin" && (
-        <PaletteBin gradient={debouncedGradient} depth={depth} />
+        <PaletteBin gradient={debouncedGradient} target={target} />
       )}
       {outputFormat === "imagePng" && (
-        <ImagePng gradient={debouncedGradient} depth={depth} />
+        <ImagePng gradient={debouncedGradient} target={target} />
       )}
     </div>
   );
 }
 
-const PaletteAsm = React.memo(({ gradient, query, depth }) => {
-  const [rowSize, setRowSize] = useState(8);
+const PaletteAsm = React.memo(({ gradient, query, target }) => {
+  const defaultLength = target.id === "atariFalcon" ? 4 : 8;
+  const [rowSize, setRowSize] = useState(defaultLength);
   const [label, setLabel] = useState("Gradient");
   const formatted = output.formatPaletteAsm(gradient, {
     rowSize,
-    depth,
+    target,
     label,
   });
   const code = "; " + baseUrl + query + "\n" + formatted;
@@ -143,13 +148,14 @@ const PaletteAsm = React.memo(({ gradient, query, depth }) => {
   );
 });
 
-const PaletteC = React.memo(({ gradient, query, depth }) => {
-  const [rowSize, setRowSize] = useState(8);
+const PaletteC = React.memo(({ gradient, query, target }) => {
+  const defaultLength = target.id === "atariFalcon" ? 4 : 8;
+  const [rowSize, setRowSize] = useState(defaultLength);
   const [varName, setVarName] = useState("gradient");
   const formatted = output.formatPaletteC(gradient, {
     rowSize,
     varName,
-    depth,
+    target,
   });
   const code = "// " + baseUrl + query + "\n" + formatted;
 
@@ -187,14 +193,15 @@ const PaletteC = React.memo(({ gradient, query, depth }) => {
   );
 });
 
-const PaletteAmos = React.memo(({ gradient, query, depth }) => {
-  const [rowSize, setRowSize] = useState(8);
+const PaletteAmos = React.memo(({ gradient, query, target }) => {
+  const defaultLength = target.id === "atariFalcon" ? 4 : 8;
+  const [rowSize, setRowSize] = useState(defaultLength);
   const [label, setLabel] = useState("Gradient");
   const formatted = output
     .formatPaletteAsm(gradient, {
       rowSize,
       label,
-      depth,
+      target,
     })
     .replace(/\tdc.w/g, "Data");
   const code = "Rem " + baseUrl + query + "\n" + formatted;
@@ -233,8 +240,8 @@ const PaletteAmos = React.memo(({ gradient, query, depth }) => {
   );
 });
 
-const PaletteBin = React.memo(({ gradient, depth }) => {
-  const bytes = output.gradientToBytes(gradient, depth);
+const PaletteBin = React.memo(({ gradient, target }) => {
+  const bytes = output.gradientToBytes(gradient, target);
   return (
     <div className="Output__actions">
       <DownloadLink
@@ -246,7 +253,7 @@ const PaletteBin = React.memo(({ gradient, depth }) => {
   );
 });
 
-const CopperList = React.memo(({ gradient, query, depth }) => {
+const CopperList = React.memo(({ gradient, query, target }) => {
   const [startLine, setStartLine] = useState(0x2b);
   const [colorIndex, setColorIndex] = useState(0);
   const [varName, setVarName] = useState("Gradient");
@@ -259,7 +266,7 @@ const CopperList = React.memo(({ gradient, query, depth }) => {
     startLine,
     waitStart,
     endList,
-    depth,
+    target,
   });
   const code = "; " + baseUrl + query + "\n" + formatted;
 
@@ -325,7 +332,7 @@ const CopperList = React.memo(({ gradient, query, depth }) => {
   );
 });
 
-function ImagePng({ gradient, depth }) {
+function ImagePng({ gradient, target }) {
   const [width, setWidth] = useState(gradient.length);
   const canvasRef = useRef(null);
   const [data, setData] = useState();
@@ -333,15 +340,12 @@ function ImagePng({ gradient, depth }) {
   useEffect(() => {
     const ctx = canvasRef.current.getContext("2d");
     for (let i = 0; i < gradient.length; i++) {
-      let color = gradient[i];
-      if (depth === 4) {
-        color = conv.quantize4Bit(color);
-      }
+      let color = conv.quantize(gradient[i], target.depth);
       ctx.fillStyle = conv.rgbCssProp(color);
       ctx.fillRect(0, i, width, i);
     }
     setData(canvasRef.current.toDataURL());
-  }, [gradient, width, depth]);
+  }, [gradient, width, target]);
 
   return (
     <>

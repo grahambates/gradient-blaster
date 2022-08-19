@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { decodeUrlQuery } from "../lib/url";
 import { reset } from "./actions";
+import targets from "../lib/targets";
 
 const urlState = decodeUrlQuery(window.location.search);
 
@@ -10,7 +11,7 @@ const defaultState = {
   ditherMode: "blueNoise",
   ditherAmount: 40,
   shuffleCount: 2,
-  depth: 4,
+  target: "amigaOcs",
 };
 
 const initialState = {
@@ -37,8 +38,8 @@ export const configSlice = createSlice({
     setShuffleCount: (state, action) => {
       state.shuffleCount = action.payload;
     },
-    setDepth: (state, action) => {
-      state.depth = action.payload;
+    setTarget: (state, action) => {
+      state.target = action.payload;
     },
   },
   extraReducers: {
@@ -54,9 +55,12 @@ export const {
   setDitherMode,
   setDitherAmount,
   setShuffleCount,
-  setDepth,
+  setTarget,
 } = configSlice.actions;
 
 export const selectOptions = (state) => state.data.present.options;
+export const selectTarget = (state) =>
+  targets[state.data.present.options.target];
+export const selectDepth = (state) => selectTarget(state).depth;
 
 export default configSlice.reducer;

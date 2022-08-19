@@ -1,14 +1,14 @@
 import * as conv from "./colorConvert";
+import targets from "./targets";
 
 const GOLDEN_RATIO = 1.61803399;
 
 export function buildGradient(points, options) {
-  const { steps, blendMode, ditherMode } = options;
+  const { steps, blendMode, ditherMode, target } = options;
+  const depth = targets[target].depth;
   const mappedPoints = [...points].map((p) => {
     let color = conv.hsvToRgb(p.color);
-    if (options.depth === 4) {
-      color = conv.quantize4Bit(color);
-    }
+    color = conv.quantize(color, depth);
     const y = Math.round(p.pos * (steps - 1));
     return { y, color };
   });
@@ -100,20 +100,20 @@ function perceptualMix(color1, color2, pos) {
   return mixed.map(conv.linearToSrgb);
 }
 
-function dither(values, { ditherMode, ditherAmount, shuffleCount, depth }) {
+function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
   if (ditherMode === "off") {
     return values;
   }
 
-  let amount = ditherAmount / 100;
+  const depth = targets[target].depth;
 
-  const outputFn = depth === 4 ? conv.quantize4Bit : conv.normalizeRgb;
+  let amount = ditherAmount / 100;
 
   if (ditherMode === "errorDiffusion") {
     const labValues = values.map(conv.rgbToLab);
     for (let i = 0; i < labValues.length; i++) {
       const col = labValues[i];
-      const quantised = conv.rgbToLab(outputFn(conv.labToRgb(col)));
+      const quantised = conv.rgbToLab(conv.quantize(conv.labToRgb(col), depth));
       const errL = col[0] - quantised[0];
       const errA = col[1] - quantised[1];
       const errB = col[2] - quantised[2];
@@ -126,7 +126,11 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, depth }) {
     return labValues.map(conv.labToRgb);
   }
 
-  const sameOutput = (a, b) => conv.sameColors(outputFn(a), outputFn(b));
+  // Scale noise functions to color depth
+  amount *= 4 / depth;
+
+  const sameOutput = (a, b) =>
+    conv.sameColors(conv.quantize(a, depth), conv.quantize(b, depth));
 
   for (let i = 0; i < values.length; i++) {
     switch (ditherMode) {

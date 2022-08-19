@@ -12,14 +12,15 @@ function Point({
   onClone,
   onSelect,
   onRemove,
-  initialDrag
+  initialDrag,
+  depth,
 }) {
-  const rgb = conv.quantize4Bit(conv.hsvToRgb(color));
+  const rgb = conv.quantize(conv.hsvToRgb(color), depth);
 
   const [isDragging, setIsDragging] = useState(initialDrag);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     e.stopPropagation();
     if (e.altKey) {
       onClone();
@@ -33,7 +34,7 @@ function Point({
     let isRemoving;
     document.body.classList.add("dragging");
 
-    const dragMove = e => {
+    const dragMove = (e) => {
       e.stopPropagation();
       if (offsetX === undefined) {
         offsetY = e.clientY - y;
@@ -91,7 +92,7 @@ function Point({
       className={classes.join(" ")}
       style={{
         top: y + "px",
-        color: conv.rgbCssProp(rgb)
+        color: conv.rgbCssProp(rgb),
       }}
       onMouseDown={handleClick}
     ></div>

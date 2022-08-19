@@ -1,13 +1,19 @@
-export function rgb4ToRgb8(rgb4) {
-  return rgb4.map((c) => c * 17).map((v) => clamp(v, 0, 255));
+export function reduceBits(rgb8, bits) {
+  const x = 1 << bits;
+  const max = x - 1;
+  const divisor = 256 / x;
+  return rgb8.map((c) => Math.floor(c / divisor)).map((v) => clamp(v, 0, max));
 }
 
-export function rgb8ToRgb4(rgb8) {
-  return rgb8.map((c) => Math.floor(c / 16)).map((v) => clamp(v, 0, 15));
+export function restoreBits(rgb, bits) {
+  const x = 1 << bits;
+  const max = x - 1;
+  const multiplier = 256 / max;
+  return rgb.map((c) => c * multiplier).map((v) => clamp(v, 0, 255));
 }
 
-export function quantize4Bit(rgb8) {
-  return rgb4ToRgb8(rgb8ToRgb4(rgb8));
+export function quantize(rgb8, bits) {
+  return restoreBits(reduceBits(rgb8, bits), bits);
 }
 
 export function linearToSrgb(x) {
@@ -164,34 +170,55 @@ export function fToPercent(val) {
   return Math.round(val * 100) + "%";
 }
 
-export function rgb4ToHex(rgb) {
+export function encodeHex3(rgb) {
   return rgb.map((v) => v.toString(16)).join("");
 }
 
-export function rgb8ToHex(rgb) {
+export function encodeHex6(rgb) {
   return normalizeRgb(rgb)
     .map((v) => v.toString(16).padStart(2, "0"))
     .join("");
 }
 
-export function hexPair(rgb) {
-  const hex = rgb8ToHex(rgb);
+/**
+ * Hex value for Atari STe/TT
+ * LSB is moved to MSB for each nibble
+ */
+export function encodeHexSte(rgb) {
+  return rgb.map((n) => ((n >> 1) | ((n & 1) << 3)).toString(16)).join("");
+}
+
+export function encodeHexFalcon(rgb) {
+  const [r, g, b] = normalizeRgb(rgb).map((v) =>
+    (v << 2).toString(16).padStart(2, "0")
+  );
+  return r + g + "00" + b;
+}
+
+/**
+ * Pair of hex values for Amiga AGA registers
+ * Separate word for upper and lower nibbles
+ */
+export function encodeHexPairAga(rgb) {
+  const hex = encodeHex6(rgb);
   const pair = [hex[0] + hex[2] + hex[4], hex[1] + hex[3] + hex[5]];
   return pair;
 }
 
-export function hexToRgb4(hex) {
+export function decodeHex3(hex) {
   return hex.split("").map((v) => parseInt(v, 16));
 }
 
-export function hexToRgb8(hex) {
+export function decodeHex6(hex) {
   return [hex.substring(0, 2), hex.substring(2, 4), hex.substring(4, 6)].map(
     (v) => parseInt(v, 16)
   );
 }
 
-export function hexToRgb(hex) {
-  return hex.length === 3 ? rgb4ToRgb8(hexToRgb4(hex)) : hexToRgb8(hex);
+export function hexToRgb(hex, depth = 4) {
+  return hex.length === 3
+    ? restoreBits(decodeHex3(hex), depth)
+    : decodeHex6(hex);
 }
 
 export function clamp(value, min = 0, max = 1) {

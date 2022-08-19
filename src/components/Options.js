@@ -8,14 +8,15 @@ import {
   setDitherMode,
   setDitherAmount,
   setShuffleCount,
+  setTarget,
   selectOptions,
-  setDepth,
 } from "../store/options";
+import targets from "../lib/targets";
 
 function Options() {
   const dispatch = useDispatch();
   const options = useSelector(selectOptions);
-  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, depth } =
+  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, target } =
     options;
 
   return (
@@ -47,14 +48,17 @@ function Options() {
       </div>
 
       <div>
-        <label htmlFor="depth">Depth: </label>
+        <label htmlFor="target">Target: </label>
         <select
-          id="depth"
-          value={depth}
-          onChange={(e) => dispatch(setDepth(parseInt(e.target.value)))}
+          id="target"
+          value={target}
+          onChange={(e) => dispatch(setTarget(e.target.value))}
         >
-          <option value="4">OCS/ECS</option>
-          <option value="8">AGA</option>
+          {Object.keys(targets).map((key) => (
+            <option key={key} value={key}>
+              {targets[key].label}
+            </option>
+          ))}
         </select>
       </div>
 
