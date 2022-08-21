@@ -32,6 +32,9 @@ function paletteHexItems(values, target) {
     } else if (target.id === "atariFalcon") {
       const color = conv.reduceBits(col, target.depth);
       items.push(conv.encodeHexFalcon(color));
+    } else if (target.id === "atariFalconTrue") {
+      const color = conv.reduceBits(col, target.depth);
+      items.push(conv.encodeHexFalconTrue(color));
     } else {
       const color = conv.reduceBits(col, 4);
       items.push(conv.encodeHex3(color));
@@ -98,6 +101,16 @@ export const gradientToBytes = (gradient, target) => {
       bytes[i++] = g;
       bytes[i++] = 0;
       bytes[i++] = b;
+    }
+  } else if (target.id === "atariFalconTrue") {
+    bytes = new Uint8Array(gradient.length * 2);
+    for (const [a, b, c, d] of gradient.map((c) =>
+      conv.decodeHex3(
+        conv.encodeHexFalconTrue(conv.reduceBits(c, target.depth))
+      )
+    )) {
+      bytes[i++] = (a << 4) + b;
+      bytes[i++] = (c << 4) + d;
     }
   } else {
     bytes = new Uint8Array(gradient.length * 2);

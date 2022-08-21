@@ -140,6 +140,10 @@ const Palette = React.memo(({ gradient, query, target, lang }) => {
   const [varNameA, setVarNameA] = useState("GradientOdd");
   const [varNameB, setVarNameB] = useState("GradientEven");
 
+  useEffect(() => {
+    setRowSize(defaultLength);
+  }, [defaultLength, setRowSize]);
+
   let code = commentPrefix + baseUrl + query + "\n";
   if (target.interlaced) {
     const [odd, even] = interlaceGradient(gradient, target.depth);

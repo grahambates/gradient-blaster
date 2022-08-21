@@ -126,8 +126,10 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
     return labValues.map(conv.labToRgb);
   }
 
+  const depthInt = Array.isArray(depth) ? depth[0] : depth;
+
   // Scale noise functions to color depth
-  amount *= 4 / depth;
+  amount *= 4 / depthInt;
 
   const sameOutput = (a, b) =>
     conv.sameColors(conv.quantize(a, depth), conv.quantize(b, depth));

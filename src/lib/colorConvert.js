@@ -1,15 +1,25 @@
 export function reduceBits(rgb8, bits) {
-  const x = 1 << bits;
-  const max = x - 1;
-  const divisor = 256 / x;
-  return rgb8.map((c) => Math.floor(c / divisor)).map((v) => clamp(v, 0, max));
+  const bitsArr = bitsToArray(bits);
+  return rgb8.map((c, i) => {
+    const x = 1 << bitsArr[i];
+    const max = x - 1;
+    const divisor = 256 / x;
+    return clamp(Math.floor(c / divisor), 0, max);
+  });
 }
 
 export function restoreBits(rgb, bits) {
-  const x = 1 << bits;
-  const max = x - 1;
-  const multiplier = 256 / max;
-  return rgb.map((c) => c * multiplier).map((v) => clamp(v, 0, 255));
+  const bitsArr = bitsToArray(bits);
+  return rgb.map((c, i) => {
+    const x = 1 << bitsArr[i];
+    const max = x - 1;
+    const multiplier = 256 / max;
+    return clamp(c * multiplier, 0, 255);
+  });
+}
+
+function bitsToArray(bits) {
+  return Array.isArray(bits) ? bits : [bits, bits, bits];
 }
 
 export function quantize(rgb8, bits) {
@@ -193,6 +203,11 @@ export function encodeHexFalcon(rgb) {
     (v << 2).toString(16).padStart(2, "0")
   );
   return r + g + "00" + b;
+}
+
+export function encodeHexFalconTrue([r, g, b]) {
+  const word = (r << 11) | (g << 5) | b;
+  return word.toString(16).padStart(4, "0");
 }
 
 /**

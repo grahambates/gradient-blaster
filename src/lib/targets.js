@@ -63,7 +63,6 @@ const targets = {
       "imagePng",
     ],
   },
-  /*
   atariFalcon: {
     id: "atariFalcon",
     label: "Atari Falcon",
@@ -77,8 +76,9 @@ const targets = {
     ],
   },
   atariFalconTruecolor: {
-    id: "atariFalconTruecolor",
+    id: "atariFalconTrue",
     label: "Atari Falcon Truecolor",
+    // depth: 5,
     depth: [5, 6, 5],
     outputs: [
       "paletteAsm",
@@ -88,7 +88,6 @@ const targets = {
       "imagePng",
     ],
   },
-  */
 };
 
 export default targets;
