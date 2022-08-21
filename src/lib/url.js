@@ -43,7 +43,7 @@ export const decodeUrlQuery = (query) => {
       delete options[key];
     }
   });
-  const depth = targets[target].depth;
+  const depth = target && targets[target].depth;
   return {
     points: points && steps && decodePoints(points, options.steps, depth),
     options,
