@@ -67,32 +67,32 @@ function Output() {
           target={target}
         />
       )}
-      {outputFormat === "paletteAsm" && (
-        <Palette
+      {outputFormat === "tableAsm" && (
+        <Table
           gradient={debouncedGradient}
           query={debouncedQuery}
           target={target}
           lang="asm"
         />
       )}
-      {outputFormat === "paletteC" && (
-        <Palette
+      {outputFormat === "tableC" && (
+        <Table
           gradient={debouncedGradient}
           query={debouncedQuery}
           target={target}
           lang="c"
         />
       )}
-      {(outputFormat === "paletteAmos" || outputFormat === "paletteStos") && (
-        <Palette
+      {(outputFormat === "tableAmos" || outputFormat === "tableStos") && (
+        <Table
           gradient={debouncedGradient}
           query={debouncedQuery}
           target={target}
           lang="amos"
         />
       )}
-      {outputFormat === "paletteBin" && (
-        <PaletteBin gradient={debouncedGradient} target={target} />
+      {outputFormat === "tableBin" && (
+        <TableBin gradient={debouncedGradient} target={target} />
       )}
       {outputFormat === "imagePng" && (
         <ImagePng gradient={debouncedGradient} target={target} />
@@ -101,23 +101,23 @@ function Output() {
   );
 }
 
-const Palette = React.memo(({ gradient, query, target, lang }) => {
+const Table = React.memo(({ gradient, query, target, lang }) => {
   let commentPrefix, fn, ext;
   switch (lang) {
     case "c":
       commentPrefix = "// ";
-      fn = output.formatPaletteC;
+      fn = output.formatTableC;
       ext = "c";
       break;
     case "asm":
       commentPrefix = "; ";
-      fn = output.formatPaletteAsm;
+      fn = output.formatTableAsm;
       ext = "s";
       break;
     case "amos":
       commentPrefix = "Rem ";
       fn = (gradient, opts) =>
-        output.formatPaletteAsm(gradient, opts).replace(/\tdc.w/g, "Data");
+        output.formatTableAsm(gradient, opts).replace(/\tdc.w/g, "Data");
       ext = "txt";
       break;
     default:
@@ -212,7 +212,7 @@ const Palette = React.memo(({ gradient, query, target, lang }) => {
   );
 });
 
-const PaletteBin = React.memo(({ gradient, target }) => {
+const TableBin = React.memo(({ gradient, target }) => {
   if (target.interlaced) {
     const [odd, even] = interlaceGradient(gradient, target.depth);
     const oddBytes = output.gradientToBytes(odd, target);

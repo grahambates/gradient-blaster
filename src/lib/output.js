@@ -2,17 +2,17 @@ import * as conv from "../lib/colorConvert";
 
 export const formats = {
   copperList: { label: "Copper list" },
-  paletteAsm: { label: "Palette: asm" },
-  paletteC: { label: "Palette: C" },
-  paletteAmos: { label: "Palette: AMOS" },
-  paletteStos: { label: "Palette: STOS" },
-  paletteBin: { label: "Palette: binary" },
+  tableAsm: { label: "Table: asm" },
+  tableC: { label: "Table: C" },
+  tableAmos: { label: "Table: AMOS" },
+  tableStos: { label: "Table: STOS" },
+  tableBin: { label: "Table: binary" },
   imagePng: { label: "PNG Image" },
 };
 
-export const formatPaletteAsm = (values, { rowSize, varName, target }) => {
+export const formatTableAsm = (values, { rowSize, varName, target }) => {
   let output = varName ? varName + ":\n" : "";
-  const items = paletteHexItems(values, target);
+  const items = tableHexItems(values, target);
   const size = items[0]?.length > 4 ? "l" : "w";
   output += groupRows(items, rowSize)
     .map((row) => `\tdc.${size} ` + row.map((v) => "$" + v).join(","))
@@ -20,7 +20,7 @@ export const formatPaletteAsm = (values, { rowSize, varName, target }) => {
   return output;
 };
 
-function paletteHexItems(values, target) {
+function tableHexItems(values, target) {
   const items = [];
   for (let col of values) {
     if (target.id === "atariSte") {
@@ -61,8 +61,8 @@ function groupRows(items, rowSize) {
   return out;
 }
 
-export const formatPaletteC = (values, { rowSize = 16, varName, target }) => {
-  const items = paletteHexItems(values, target);
+export const formatTableC = (values, { rowSize = 16, varName, target }) => {
+  const items = tableHexItems(values, target);
   const size = items[0]?.length > 4 ? "long" : "short";
   let output = `unsigned ${size} ${varName}[${items.length}] = {\n`;
   output += groupRows(items, rowSize)
