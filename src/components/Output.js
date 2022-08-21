@@ -1,26 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
-import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import asmatmel from "react-syntax-highlighter/dist/esm/languages/prism/asmatmel";
-import c from "react-syntax-highlighter/dist/esm/languages/prism/c";
-import vbnet from "react-syntax-highlighter/dist/esm/languages/prism/vbnet";
 import { FaCopy, FaDownload } from "react-icons/fa";
 
 import "./Output.css";
-import * as conv from "../lib/colorConvert";
-import * as output from "../lib/output";
 import { selectGradient, selectPresentData } from "../store";
 import { selectTarget } from "../store/options";
+import * as conv from "../lib/colorConvert";
+import * as output from "../lib/output";
 import { encodeUrlQuery } from "../lib/url";
-import Button from "./Button";
 import { interlaceGradient } from "../lib/gradient";
+import Button from "./Button";
+import Code from "./Code";
 
-SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
-SyntaxHighlighter.registerLanguage("c", c);
-SyntaxHighlighter.registerLanguage("vbnet", vbnet);
-
-const DEBOUNCE_DELAY = 300;
+const DEBOUNCE_DELAY = 100;
 
 const baseUrl = window.location.href.split("?")[0];
 
@@ -110,25 +102,22 @@ function Output() {
 }
 
 const Palette = React.memo(({ gradient, query, target, lang }) => {
-  let commentPrefix, fn, syntax, ext;
+  let commentPrefix, fn, ext;
   switch (lang) {
     case "c":
       commentPrefix = "// ";
       fn = output.formatPaletteC;
-      syntax = "c";
       ext = "c";
       break;
     case "asm":
       commentPrefix = "; ";
       fn = output.formatPaletteAsm;
-      syntax = "asmatmel";
       ext = "s";
       break;
     case "amos":
       commentPrefix = "Rem ";
       fn = (gradient, opts) =>
         output.formatPaletteAsm(gradient, opts).replace(/\tdc.w/g, "Data");
-      syntax = "vbnet";
       ext = "txt";
       break;
     default:
@@ -172,7 +161,7 @@ const Palette = React.memo(({ gradient, query, target, lang }) => {
         <CopyLink code={code} />
         <DownloadLink data={code} filename={"gradient." + ext} />
       </div>
-      <Code language={syntax} code={code} />
+      <Code code={code} />
 
       <div className="Output__formatOptions">
         <div>
@@ -304,7 +293,7 @@ const CopperList = React.memo(({ gradient, query, target }) => {
         <CopyLink code={code} />
         <DownloadLink data={code} filename="gradient.s" />
       </div>
-      <Code language="asmatmel" code={code} />
+      <Code code={code} />
 
       <div className="Output__formatOptions">
         <div>
@@ -456,18 +445,5 @@ function DownloadLink({
     </Button>
   );
 }
-
-const Code = ({ language, code }) => {
-  return (
-    <SyntaxHighlighter
-      language={language}
-      style={a11yDark}
-      wrapLines
-      wrapLongLines
-    >
-      {code}
-    </SyntaxHighlighter>
-  );
-};
 
 export default Output;

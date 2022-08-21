@@ -21,13 +21,6 @@
   margin-left: 0.5rem;
 }
 
-.Output pre {
-  clear: both;
-  height: 400px;
-  font-size: 0.9em;
-  transition: 2s;
-  box-shadow: 0 0 4px 4px transparent;
-}
 .codeCopied .Output pre {
   box-shadow: 0 0 4px 4px rgb(0, 244, 244);
   transition: 0s;
