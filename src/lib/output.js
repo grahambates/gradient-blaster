@@ -35,8 +35,11 @@ function tableHexItems(values, target) {
     } else if (target.id === "atariFalconTrue") {
       const color = conv.reduceBits(col, target.depth);
       items.push(conv.encodeHexFalconTrue(color));
-    } else {
+    } else if (target.id === "amigaOcsLace") {
       const color = conv.reduceBits(col, 4);
+      items.push(conv.encodeHex3(color));
+    } else {
+      const color = conv.reduceBits(col, target.depth);
       items.push(conv.encodeHex3(color));
     }
   }
@@ -112,9 +115,17 @@ export const gradientToBytes = (gradient, target) => {
       bytes[i++] = (a << 4) + b;
       bytes[i++] = (c << 4) + d;
     }
-  } else {
+  } else if (target.id === "amigaOcsLace") {
     bytes = new Uint8Array(gradient.length * 2);
     for (const [r, g, b] of gradient.map((c) => conv.reduceBits(c, 4))) {
+      bytes[i++] = r;
+      bytes[i++] = (g << 4) + b;
+    }
+  } else {
+    bytes = new Uint8Array(gradient.length * 2);
+    for (const [r, g, b] of gradient.map((c) =>
+      conv.reduceBits(c, target.depth)
+    )) {
       bytes[i++] = r;
       bytes[i++] = (g << 4) + b;
     }
