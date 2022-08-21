@@ -12,8 +12,9 @@ import {
   selectPoints,
   selectSelectedIndex,
 } from "../store/points";
-import { selectOptions, selectDepth } from "../store/options";
+import { selectOptions, selectTarget } from "../store/options";
 import { selectGradient } from "../store";
+import { interlaceGradient } from "../lib/gradient";
 
 function Gradient() {
   const dispatch = useDispatch();
@@ -21,10 +22,11 @@ function Gradient() {
   const points = useSelector(selectPoints);
   const selected = useSelector(selectSelectedIndex);
   const gradient = useSelector(selectGradient);
-  const depth = useSelector(selectDepth);
+  const { depth, interlaced } = useSelector(selectTarget);
 
   const [scale, setScale] = useState(1);
   const [autoScale, setAutoScale] = useState(true);
+  const [previewLace, setPreviewLace] = useState(false);
 
   useEffect(() => {
     if (autoScale) {
@@ -89,27 +91,47 @@ function Gradient() {
             />
           ))}
         </div>
-        <Canvas gradient={gradient} scale={scale} depth={depth} />
+        {interlaced && previewLace ? (
+          <CanvasLaced gradient={gradient} scale={scale} depth={depth} />
+        ) : (
+          <Canvas gradient={gradient} scale={scale} depth={depth} />
+        )}
       </div>
-      <div className="Gradient__zoom">
-        <label htmlFor="steps">Zoom </label>&times;{" "}
-        <input
-          id="scale"
-          type="number"
-          min={1}
-          max={20}
-          value={scale}
-          disabled={autoScale}
-          onChange={(e) => setScale(parseInt(e.target.value))}
-        />{" "}
-        <label>
+
+      <div className="Gradient__options">
+        <div className="Gradient__interlace">
+          {interlaced && (
+            <label>
+              <input
+                type="checkbox"
+                checked={previewLace}
+                onChange={(e) => setPreviewLace(e.target.checked)}
+              />
+              Preview interlace
+            </label>
+          )}
+        </div>
+
+        <div className="Gradient__zoom">
+          <label htmlFor="steps">Zoom </label>&times;{" "}
           <input
-            type="checkbox"
-            checked={autoScale}
-            onChange={(e) => setAutoScale(e.target.checked)}
-          />
-          auto
-        </label>
+            id="scale"
+            type="number"
+            min={1}
+            max={20}
+            value={scale}
+            disabled={autoScale}
+            onChange={(e) => setScale(parseInt(e.target.value))}
+          />{" "}
+          <label>
+            <input
+              type="checkbox"
+              checked={autoScale}
+              onChange={(e) => setAutoScale(e.target.checked)}
+            />
+            auto
+          </label>
+        </div>
       </div>
     </>
   );
@@ -139,6 +161,58 @@ function Canvas({ gradient, scale, depth }) {
       width={width}
       height={steps * scale}
     />
+  );
+}
+
+function CanvasLaced({ gradient, scale, depth }) {
+  const width = 512;
+  const canvasRefA = useRef(null);
+  const canvasRefB = useRef(null);
+  const steps = gradient.length;
+
+  useEffect(() => {
+    const ctxA = canvasRefA.current?.getContext("2d");
+    const ctxB = canvasRefB.current?.getContext("2d");
+
+    const [odd, even] = interlaceGradient(gradient, depth);
+
+    for (let i = 0; i < steps; i++) {
+      ctxA.fillStyle = conv.rgbCssProp(odd[i]);
+      ctxA.fillRect(0, i * scale, width, scale);
+      ctxB.fillStyle = conv.rgbCssProp(even[i]);
+      ctxB.fillRect(0, i * scale, width, scale);
+    }
+
+    let mounted = true;
+
+    const toggle = () => {
+      canvasRefA.current.classList.toggle("hidden");
+      canvasRefB.current.classList.toggle("hidden");
+      if (mounted) {
+        window.requestAnimationFrame(toggle);
+      }
+    };
+
+    window.requestAnimationFrame(toggle);
+
+    return () => (mounted = false);
+  }, [steps, scale, depth, gradient]);
+
+  return (
+    <>
+      <canvas
+        className="Gradient__canvas hidden"
+        ref={canvasRefA}
+        width={width}
+        height={steps * scale}
+      />
+      <canvas
+        className="Gradient__canvas"
+        ref={canvasRefB}
+        width={width}
+        height={steps * scale}
+      />
+    </>
   );
 }
 

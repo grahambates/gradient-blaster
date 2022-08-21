@@ -13,14 +13,19 @@
 
 .Gradient__canvas {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  width: 100%;
+  width: calc(100% - 18px);
 }
 
-.Gradient__zoom {
+.Gradient__options {
   margin-top: 1rem;
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
 }
 
 .Gradient__zoom input[type="number"] {
   width: 4rem;
+}
+
+.Gradient__canvas.hidden {
+  display: none;
 }

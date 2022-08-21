@@ -57,3 +57,9 @@
 #Output-startLine {
   width: 3rem;
 }
+
+.Output__labels > div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}

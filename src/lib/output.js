@@ -10,8 +10,8 @@ export const formats = {
   imagePng: { label: "PNG Image" },
 };
 
-export const formatPaletteAsm = (values, { rowSize, label, target }) => {
-  let output = label ? label + ":\n" : "";
+export const formatPaletteAsm = (values, { rowSize, varName, target }) => {
+  let output = varName ? varName + ":\n" : "";
   const items = paletteHexItems(values, target);
   const size = items[0]?.length > 4 ? "l" : "w";
   output += groupRows(items, rowSize)
@@ -23,10 +23,7 @@ export const formatPaletteAsm = (values, { rowSize, label, target }) => {
 function paletteHexItems(values, target) {
   const items = [];
   for (let col of values) {
-    if (target.id === "amigaOcs" || target.id === "atariSt") {
-      const color = conv.reduceBits(col, target.depth);
-      items.push(conv.encodeHex3(color));
-    } else if (target.id === "atariSte") {
+    if (target.id === "atariSte") {
       const color = conv.reduceBits(col, target.depth);
       items.push(conv.encodeHexSte(color));
     } else if (target.id === "amigaAga") {
@@ -35,6 +32,9 @@ function paletteHexItems(values, target) {
     } else if (target.id === "atariFalcon") {
       const color = conv.reduceBits(col, target.depth);
       items.push(conv.encodeHexFalcon(color));
+    } else {
+      const color = conv.reduceBits(col, 4);
+      items.push(conv.encodeHex3(color));
     }
   }
   return items;
@@ -71,15 +71,8 @@ export const formatPaletteC = (values, { rowSize = 16, varName, target }) => {
 export const gradientToBytes = (gradient, target) => {
   let bytes;
   let i = 0;
-  if (target.id === "amigaOcs" || target.id === "atariSt") {
-    bytes = new Uint8Array(gradient.length * 2);
-    for (const [r, g, b] of gradient.map((c) =>
-      conv.reduceBits(c, target.depth)
-    )) {
-      bytes[i++] = r;
-      bytes[i++] = (g << 4) + b;
-    }
-  } else if (target.id === "amigaAga") {
+
+  if (target.id === "amigaAga") {
     bytes = new Uint8Array(gradient.length * 4);
     for (const rgb of gradient) {
       const rgbPair = conv.encodeHexPairAga(rgb).map(conv.decodeHex3);
@@ -106,6 +99,12 @@ export const gradientToBytes = (gradient, target) => {
       bytes[i++] = 0;
       bytes[i++] = b;
     }
+  } else {
+    bytes = new Uint8Array(gradient.length * 2);
+    for (const [r, g, b] of gradient.map((c) => conv.reduceBits(c, 4))) {
+      bytes[i++] = r;
+      bytes[i++] = (g << 4) + b;
+    }
   }
   return bytes;
 };
@@ -128,7 +127,7 @@ export function buildCopperList(
   let lastCol;
   let line = startLine;
   for (const col of gradient) {
-    if (target.id === "amigaOcs") {
+    if (target.id === "amigaOcs" || target.id === "amigaOcsLace") {
       // OCS/ ECS
       const hex = conv.encodeHex3(conv.reduceBits(col, 4));
       if (lastCol !== hex) {

@@ -233,3 +233,23 @@ const blueNoise = [
   38, 15, 29, 54, 2, 42, 24, 61, 12, 36, 21, 52, 5, 40, 26, 58, 8, 33, 46, 17,
   55, 3, 30, 43,
 ].map((n) => n / 64 - 0.5);
+
+export function interlaceGradient(gradient, depth) {
+  const out = [[], []];
+
+  const x = 1 << depth;
+  const divisor = 256 / x;
+  const inc = divisor / 2;
+
+  for (let col of gradient) {
+    let odd = conv.quantize(col, depth).map((c) => c - inc);
+    odd = conv.quantize(odd, depth - 1);
+    out[0].push(odd);
+
+    let even = conv.quantize(col, depth).map((c) => c + inc);
+    even = conv.quantize(even, depth - 1);
+    out[1].push(even);
+  }
+
+  return out;
+}

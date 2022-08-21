@@ -12,11 +12,11 @@ const targets = {
       "imagePng",
     ],
   },
-  /*
   amigaOcsLace: {
     id: "amigaOcsLace",
     label: "Amiga OCS/ESC interlace",
     depth: 5,
+    interlaced: true,
     outputs: [
       "copperList",
       "paletteAsm",
@@ -26,7 +26,6 @@ const targets = {
       "imagePng",
     ],
   },
-  */
   amigaAga: {
     id: "amigaAga",
     label: "Amiga AGA",

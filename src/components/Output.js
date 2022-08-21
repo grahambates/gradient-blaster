@@ -14,6 +14,7 @@ import { selectGradient, selectPresentData } from "../store";
 import { selectTarget } from "../store/options";
 import { encodeUrlQuery } from "../lib/url";
 import Button from "./Button";
+import { interlaceGradient } from "../lib/gradient";
 
 SyntaxHighlighter.registerLanguage("asmatmel", asmatmel);
 SyntaxHighlighter.registerLanguage("c", c);
@@ -46,8 +47,10 @@ function Output() {
   }, [present, gradient]);
 
   useEffect(() => {
-    setOutputFormat(target.outputs[0]);
-  }, [target]);
+    if (!target.outputs.includes(outputFormat)) {
+      setOutputFormat(target.outputs[0]);
+    }
+  }, [target, outputFormat]);
 
   return (
     <div className="Output">
@@ -73,24 +76,27 @@ function Output() {
         />
       )}
       {outputFormat === "paletteAsm" && (
-        <PaletteAsm
+        <Palette
           gradient={debouncedGradient}
           query={debouncedQuery}
           target={target}
+          lang="asm"
         />
       )}
       {outputFormat === "paletteC" && (
-        <PaletteC
+        <Palette
           gradient={debouncedGradient}
           query={debouncedQuery}
           target={target}
+          lang="c"
         />
       )}
       {(outputFormat === "paletteAmos" || outputFormat === "paletteStos") && (
-        <PaletteAmos
+        <Palette
           gradient={debouncedGradient}
           query={debouncedQuery}
           target={target}
+          lang="amos"
         />
       )}
       {outputFormat === "paletteBin" && (
@@ -103,116 +109,66 @@ function Output() {
   );
 }
 
-const PaletteAsm = React.memo(({ gradient, query, target }) => {
+const Palette = React.memo(({ gradient, query, target, lang }) => {
+  let commentPrefix, fn, syntax, ext;
+  switch (lang) {
+    case "c":
+      commentPrefix = "// ";
+      fn = output.formatPaletteC;
+      syntax = "c";
+      ext = "c";
+      break;
+    case "asm":
+      commentPrefix = "; ";
+      fn = output.formatPaletteAsm;
+      syntax = "asmatmel";
+      ext = "s";
+      break;
+    case "amos":
+      commentPrefix = "Rem ";
+      fn = (gradient, opts) =>
+        output.formatPaletteAsm(gradient, opts).replace(/\tdc.w/g, "Data");
+      syntax = "vbnet";
+      ext = "txt";
+      break;
+    default:
+  }
+
   const defaultLength = target.id === "atariFalcon" ? 4 : 8;
   const [rowSize, setRowSize] = useState(defaultLength);
-  const [label, setLabel] = useState("Gradient");
-  const formatted = output.formatPaletteAsm(gradient, {
-    rowSize,
-    target,
-    label,
-  });
-  const code = "; " + baseUrl + query + "\n" + formatted;
+  const [varName, setVarName] = useState("Gradient");
+  const [varNameA, setVarNameA] = useState("GradientOdd");
+  const [varNameB, setVarNameB] = useState("GradientEven");
 
-  return (
-    <>
-      <div className="Output__actions">
-        <CopyLink code={code} />
-        <DownloadLink data={code} filename="gradient.s" />
-      </div>
-      <Code language="asmatmel" code={code} />
-
-      <div className="Output__formatOptions">
-        <div>
-          <label htmlFor="Output-rowSize">Values per row: </label>
-          <input
-            id="Output-rowSize"
-            type="number"
-            min="1"
-            max="1000"
-            value={rowSize}
-            onChange={(e) => setRowSize(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="Output-label">Label: </label>
-          <input
-            id="Output-label"
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-          />
-        </div>
-      </div>
-    </>
-  );
-});
-
-const PaletteC = React.memo(({ gradient, query, target }) => {
-  const defaultLength = target.id === "atariFalcon" ? 4 : 8;
-  const [rowSize, setRowSize] = useState(defaultLength);
-  const [varName, setVarName] = useState("gradient");
-  const formatted = output.formatPaletteC(gradient, {
-    rowSize,
-    varName,
-    target,
-  });
-  const code = "// " + baseUrl + query + "\n" + formatted;
-
-  return (
-    <>
-      <div className="Output__actions">
-        <CopyLink code={code} />
-        <DownloadLink data={code} filename="gradient.c" />
-      </div>
-      <Code language="c" code={code} />
-
-      <div className="Output__formatOptions">
-        <div>
-          <label htmlFor="Output-rowSize">Values per row: </label>
-          <input
-            id="Output-rowSize"
-            type="number"
-            min="1"
-            max="1000"
-            value={rowSize}
-            onChange={(e) => setRowSize(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="Output-varName">Variable name: </label>
-          <input
-            id="Output-varName"
-            type="text"
-            value={varName}
-            onChange={(e) => setVarName(e.target.value)}
-          />
-        </div>
-      </div>
-    </>
-  );
-});
-
-const PaletteAmos = React.memo(({ gradient, query, target }) => {
-  const defaultLength = target.id === "atariFalcon" ? 4 : 8;
-  const [rowSize, setRowSize] = useState(defaultLength);
-  const [label, setLabel] = useState("Gradient");
-  const formatted = output
-    .formatPaletteAsm(gradient, {
+  let code = commentPrefix + baseUrl + query + "\n";
+  if (target.interlaced) {
+    const [odd, even] = interlaceGradient(gradient, target.depth);
+    code += fn(odd, {
       rowSize,
-      label,
+      varName: varNameA,
       target,
-    })
-    .replace(/\tdc.w/g, "Data");
-  const code = "Rem " + baseUrl + query + "\n" + formatted;
+    });
+    code += "\n";
+    code += fn(even, {
+      rowSize,
+      varName: varNameB,
+      target,
+    });
+  } else {
+    code += fn(gradient, {
+      rowSize,
+      varName,
+      target,
+    });
+  }
 
   return (
     <>
       <div className="Output__actions">
         <CopyLink code={code} />
-        <DownloadLink data={code} filename="gradient-amos.txt" />
+        <DownloadLink data={code} filename={"gradient." + ext} />
       </div>
-      <Code language="vbnet" code={code} />
+      <Code language={syntax} code={code} />
 
       <div className="Output__formatOptions">
         <div>
@@ -226,49 +182,117 @@ const PaletteAmos = React.memo(({ gradient, query, target }) => {
             onChange={(e) => setRowSize(e.target.value)}
           />
         </div>
-        <div>
-          <label htmlFor="Output-varName">Variable name: </label>
-          <input
-            id="Output-varName"
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-          />
-        </div>
+        {target.interlaced ? (
+          <div className="Output__labels">
+            <div>
+              <label htmlFor="Output-varNameA">Label (odd):</label>
+              <input
+                id="Output-varNameA"
+                type="text"
+                value={varNameA}
+                onChange={(e) => setVarNameA(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="Output-varNameB">Label (even):</label>
+              <input
+                id="Output-varNameB"
+                type="text"
+                value={varNameB}
+                onChange={(e) => setVarNameB(e.target.value)}
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="Output-varName">Label: </label>
+            <input
+              id="Output-varName"
+              type="text"
+              value={varName}
+              onChange={(e) => setVarName(e.target.value)}
+            />
+          </div>
+        )}
       </div>
     </>
   );
 });
 
 const PaletteBin = React.memo(({ gradient, target }) => {
-  const bytes = output.gradientToBytes(gradient, target);
-  return (
-    <div className="Output__actions">
-      <DownloadLink
-        data={output.base64Encode(bytes)}
-        filename="gradient.bin"
-        mimetype="application/octet-stream;base64"
-      />
-    </div>
-  );
+  if (target.interlaced) {
+    const [odd, even] = interlaceGradient(gradient, target.depth);
+    const oddBytes = output.gradientToBytes(odd, target);
+    const evenBytes = output.gradientToBytes(even, target);
+    return (
+      <div className="Output__actions">
+        <DownloadLink
+          data={output.base64Encode(oddBytes)}
+          filename="gradientOdd.bin"
+          mimetype="application/octet-stream;base64"
+          label="Download (odd)"
+        />
+        <DownloadLink
+          data={output.base64Encode(evenBytes)}
+          filename="gradientEven.bin"
+          mimetype="application/octet-stream;base64"
+          label="Download (even)"
+        />
+      </div>
+    );
+  } else {
+    const bytes = output.gradientToBytes(gradient, target);
+    return (
+      <div className="Output__actions">
+        <DownloadLink
+          data={output.base64Encode(bytes)}
+          filename="gradient.bin"
+          mimetype="application/octet-stream;base64"
+        />
+      </div>
+    );
+  }
 });
 
 const CopperList = React.memo(({ gradient, query, target }) => {
   const [startLine, setStartLine] = useState(0x2b);
   const [colorIndex, setColorIndex] = useState(0);
   const [varName, setVarName] = useState("Gradient");
+  const [varNameA, setVarNameA] = useState("GradientOdd");
+  const [varNameB, setVarNameB] = useState("GradientEven");
   const [waitStart, setWaitStart] = useState(true);
   const [endList, setEndList] = useState(true);
 
-  const formatted = output.buildCopperList(gradient, {
-    varName,
-    colorIndex,
-    startLine,
-    waitStart,
-    endList,
-    target,
-  });
-  const code = "; " + baseUrl + query + "\n" + formatted;
+  let code = "; " + baseUrl + query + "\n";
+  if (target.interlaced) {
+    const [odd, even] = interlaceGradient(gradient, target.depth);
+    code += output.buildCopperList(odd, {
+      varName: varNameA,
+      colorIndex,
+      startLine,
+      waitStart,
+      endList,
+      target,
+    });
+    code += "\n";
+    code += output.buildCopperList(even, {
+      varName: varNameB,
+      colorIndex,
+      startLine,
+      waitStart,
+      endList,
+      target,
+    });
+  } else {
+    code += output.buildCopperList(gradient, {
+      varName,
+      colorIndex,
+      startLine,
+      waitStart,
+      endList,
+      target,
+    });
+  }
 
   return (
     <>
@@ -318,15 +342,38 @@ const CopperList = React.memo(({ gradient, query, target }) => {
             End copper list
           </label>
         </div>
-        <div>
-          <label htmlFor="Output-varName">Label: </label>
-          <input
-            id="Output-varName"
-            type="text"
-            value={varName}
-            onChange={(e) => setVarName(e.target.value)}
-          />
-        </div>
+        {target.interlaced ? (
+          <div className="Output__labels">
+            <div>
+              <label htmlFor="Output-varNameA">Label (odd):</label>
+              <input
+                id="Output-varNameA"
+                type="text"
+                value={varNameA}
+                onChange={(e) => setVarNameA(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="Output-varNameB">Label (even):</label>
+              <input
+                id="Output-varNameB"
+                type="text"
+                value={varNameB}
+                onChange={(e) => setVarNameB(e.target.value)}
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="Output-varName">Label: </label>
+            <input
+              id="Output-varName"
+              type="text"
+              value={varName}
+              onChange={(e) => setVarName(e.target.value)}
+            />
+          </div>
+        )}
       </div>
     </>
   );
@@ -396,11 +443,12 @@ function DownloadLink({
   data,
   filename,
   mimetype = "text/plain;charset=utf-8",
+  label = "Download",
 }) {
   const codeHref = `data:${mimetype},` + encodeURIComponent(data);
   return (
     <Button iconLeft={<FaDownload />} href={codeHref} download={filename}>
-      Download
+      {label}
     </Button>
   );
 }
