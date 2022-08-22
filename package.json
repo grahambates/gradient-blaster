@@ -34,7 +34,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src",
-    "test": "jest"
+    "test": "jest",
+    "analyze": "source-map-explorer build/assets/index.*.js"
   },
   "eslintConfig": {
     "extends": [
