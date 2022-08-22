@@ -33,7 +33,7 @@ function Detail() {
     dispatch(setPos(pos));
   };
 
-  const [hex, setHex] = useState();
+  const [hex, setHex] = useState("");
 
   useEffect(() => {
     const rgb = conv.reduceBits(conv.hsvToRgb(selectedPoint.color), depth);
