@@ -5,49 +5,53 @@
   "author": "Graham Bates",
   "license": "MIT",
   "homepage": "https://github.com/grahambates/gradient-blaster#readme",
-  "keywords": ["demoscene", "demotool", "amiga", "atarist", "atari", "atari-st", "atari-falcon", "atari-ste"],
+  "keywords": [
+    "demoscene",
+    "demotool",
+    "amiga",
+    "atarist",
+    "atari",
+    "atari-st",
+    "atari-falcon",
+    "atari-ste"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/grahambates/gradient-blaster"
   },
+  "type": "module",
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.3",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
     "qs": "^6.11.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-redux": "^8.0.2",
-    "react-scripts": "^5.0.1",
-    "redux-undo": "^1.0.1",
-    "source-map-explorer": "^2.5.2",
-    "web-vitals": "^2.1.4"
+    "redux-undo": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "prettier"
     ]
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^2.0.1",
+    "eslint": "^8.22.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-react-app": "^7.0.1",
+    "prettier": "^2.7.1",
+    "source-map-explorer": "^2.5.2",
+    "vite": "^3.0.9"
   }
 }
