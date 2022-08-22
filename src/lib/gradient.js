@@ -194,12 +194,13 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
         values[i][1] += (Math.random() * 17 - 8.5) * amount;
         values[i][2] += (Math.random() * 17 - 8.5) * amount;
         break;
-      case "whiteNoiseMono":
+      case "whiteNoiseMono": {
         const ofs = (Math.random() - 0.5) * 17 * amount;
         values[i][0] += ofs;
         values[i][1] += ofs;
         values[i][2] += ofs;
         break;
+      }
       // https://bartwronski.com/2016/10/30/dithering-part-two-golden-ratio-sequence-blue-noise-and-highpass-and-remap/comment-page-1/
       case "goldenRatio": {
         values[i][0] += (((i * GOLDEN_RATIO) % 1) - 0.5) * 17 * amount;
