@@ -1,9 +1,11 @@
 {
   "name": "gradient-blaster",
-  "description": "Amiga OCS/ECS Gradient builder tool",
+  "description": "Web-based tool to build gradient data for retro platforms using a visual editor",
   "version": "0.1.0",
   "author": "Graham Bates",
   "license": "MIT",
+  "homepage": "https://github.com/grahambates/gradient-blaster#readme",
+  "keywords": ["demoscene", "demotool", "amiga", "atarist", "atari", "atari-st", "atari-falcon", "atari-ste"],
   "repository": {
     "type": "git",
     "url": "https://github.com/grahambates/gradient-blaster"
