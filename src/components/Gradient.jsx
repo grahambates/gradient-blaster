@@ -15,7 +15,6 @@ import {
 import { selectOptions, selectTarget } from "../store/options";
 import { selectGradient } from "../store";
 import { interlaceGradient } from "../lib/gradient";
-import { useCanvasGradient } from "../lib/hooks";
 
 function Gradient() {
   const dispatch = useDispatch();
@@ -138,15 +137,29 @@ function Gradient() {
   );
 }
 
-function Canvas({ gradient, depth, scale }) {
+function Canvas({ gradient, scale, depth }) {
   const width = 512;
-  const canvasRef = useCanvasGradient(depth, gradient, scale)
+  const canvasRef = useRef(null);
+  const steps = gradient.length;
+
+  useEffect(() => {
+    /** @type CanvasRenderingContext2D */
+    const ctx = canvasRef.current?.getContext("2d");
+
+    for (let i = 0; i < steps; i++) {
+      let col = gradient[i];
+      col = conv.quantize(col, depth);
+      ctx.fillStyle = conv.rgbCssProp(col);
+      ctx.fillRect(0, i * scale, width, scale);
+    }
+  }, [steps, scale, depth, gradient]);
+
   return (
     <canvas
       className="Gradient__canvas"
       ref={canvasRef}
       width={width}
-      height={gradient.length * scale}
+      height={steps * scale}
     />
   );
 }

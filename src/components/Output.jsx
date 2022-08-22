@@ -5,12 +5,12 @@ import { FaCopy, FaDownload } from "react-icons/fa";
 import "./Output.css";
 import { selectGradient, selectPresentData } from "../store";
 import { selectTarget } from "../store/options";
+import * as conv from "../lib/colorConvert";
 import * as output from "../lib/output";
 import { encodeUrlQuery } from "../lib/url";
 import { interlaceGradient } from "../lib/gradient";
 import Button from "./Button";
 import Code from "./Code";
-import { useCanvasGradient } from "../lib/hooks";
 
 const DEBOUNCE_DELAY = 100;
 
@@ -374,11 +374,18 @@ const CopperList = React.memo(({ gradient, query, target }) => {
 
 function ImagePng({ gradient, target }) {
   const [width, setWidth] = useState(gradient.length);
-  const canvasRef = useCanvasGradient(target.depth, gradient)
+  const canvasRef = useRef(null);
   const [data, setData] = useState();
+
   useEffect(() => {
+    const ctx = canvasRef.current.getContext("2d");
+    for (let i = 0; i < gradient.length; i++) {
+      let color = conv.quantize(gradient[i], target.depth);
+      ctx.fillStyle = conv.rgbCssProp(color);
+      ctx.fillRect(0, i, width, i);
+    }
     setData(canvasRef.current.toDataURL());
-  }, [canvasRef]);
+  }, [gradient, width, target]);
 
   return (
     <>
