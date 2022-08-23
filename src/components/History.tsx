@@ -7,14 +7,15 @@ import "./History.css";
 
 import Button from "./Button";
 import { reset } from "../store/actions";
+import { RootState } from "../store";
 
 function History() {
   const dispatch = useDispatch();
-  const { past, future } = useSelector(state => state.data);
+  const { past, future } = useSelector((state: RootState) => state.data);
 
   // Undo/redo keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = function(e) {
+    const handleKeyDown = function (e: KeyboardEvent) {
       e.stopImmediatePropagation();
       if (e.key === "z" && (e.ctrlKey || e.metaKey) && e.shiftKey) {
         dispatch(ActionCreators.redo());

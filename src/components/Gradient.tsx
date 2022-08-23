@@ -17,6 +17,7 @@ import { interlaceGradient } from "../lib/gradient";
 import { rgbToHsv } from "../lib/colorSpace";
 import { quantize } from "../lib/bitDepth";
 import { clamp, rgbCssProp } from "../lib/utils";
+import { Bits, Color } from "../types";
 
 function Gradient() {
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ function Gradient() {
 
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleAdd = (y) => {
+  const handleAdd = (y: number) => {
     const scaledY = Math.round(y / scale);
     const sample = gradient[scaledY];
 
@@ -61,7 +62,7 @@ function Gradient() {
     );
   };
 
-  const handleMove = (newY) => {
+  const handleMove = (newY: number) => {
     const maxY = steps * scale - scale;
     const pos = clamp(newY, 0, maxY) / maxY;
     dispatch(setPos(pos));
@@ -75,7 +76,7 @@ function Gradient() {
           style={{ height: height + "px" }}
           onMouseDown={(e) => {
             e.preventDefault();
-            handleAdd(e.pageY - e.target.offsetTop);
+            handleAdd(e.pageY - e.currentTarget.offsetTop);
           }}
         >
           {points.map((p, i) => (
@@ -139,20 +140,26 @@ function Gradient() {
   );
 }
 
-function Canvas({ gradient, scale, depth }) {
+interface CanvasProps {
+  gradient: Color[];
+  scale: number;
+  depth: Bits;
+}
+
+function Canvas({ gradient, scale, depth }: CanvasProps) {
   const width = 512;
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const steps = gradient.length;
 
   useEffect(() => {
-    /** @type CanvasRenderingContext2D */
     const ctx = canvasRef.current?.getContext("2d");
-
-    for (let i = 0; i < steps; i++) {
-      let col = gradient[i];
-      col = quantize(col, depth);
-      ctx.fillStyle = rgbCssProp(col);
-      ctx.fillRect(0, i * scale, width, scale);
+    if (ctx) {
+      for (let i = 0; i < steps; i++) {
+        let col = gradient[i];
+        col = quantize(col, depth);
+        ctx.fillStyle = rgbCssProp(col);
+        ctx.fillRect(0, i * scale, width, scale);
+      }
     }
   }, [steps, scale, depth, gradient]);
 
@@ -166,15 +173,21 @@ function Canvas({ gradient, scale, depth }) {
   );
 }
 
-function CanvasLaced({ gradient, scale, depth }) {
+function CanvasLaced({ gradient, scale, depth }: CanvasProps) {
   const width = 512;
-  const canvasRefA = useRef(null);
-  const canvasRefB = useRef(null);
+  const canvasRefA = useRef<HTMLCanvasElement>(null);
+  const canvasRefB = useRef<HTMLCanvasElement>(null);
   const steps = gradient.length;
 
   useEffect(() => {
-    const ctxA = canvasRefA.current?.getContext("2d");
-    const ctxB = canvasRefB.current?.getContext("2d");
+    const canvasA = canvasRefA.current;
+    const canvasB = canvasRefB.current;
+    const ctxA = canvasA?.getContext("2d");
+    const ctxB = canvasB?.getContext("2d");
+
+    if (!canvasA || !canvasB || !ctxA || !ctxB) {
+      return;
+    }
 
     const [odd, even] = interlaceGradient(gradient, depth);
 
@@ -188,8 +201,8 @@ function CanvasLaced({ gradient, scale, depth }) {
     let mounted = true;
 
     const toggle = () => {
-      canvasRefA.current.classList.toggle("hidden");
-      canvasRefB.current.classList.toggle("hidden");
+      canvasA.classList.toggle("hidden");
+      canvasB.classList.toggle("hidden");
       if (mounted) {
         window.requestAnimationFrame(toggle);
       }
@@ -197,7 +210,9 @@ function CanvasLaced({ gradient, scale, depth }) {
 
     window.requestAnimationFrame(toggle);
 
-    return () => (mounted = false);
+    return () => {
+      mounted = false;
+    };
   }, [steps, scale, depth, gradient]);
 
   return (

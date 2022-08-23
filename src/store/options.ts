@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { decodeUrlQuery } from "../lib/url";
 import { reset } from "./actions";
-import targets from "../lib/targets";
+import targets, { Target } from "../lib/targets";
+import { Bits, Options } from "../types";
+import { RootState } from ".";
 
 const urlState = decodeUrlQuery(window.location.search);
 
-const defaultState = {
+const defaultState: Options = {
   steps: 256,
   blendMode: "oklab",
   ditherMode: "blueNoise",
@@ -14,7 +16,7 @@ const defaultState = {
   target: "amigaOcs",
 };
 
-const initialState = {
+const initialState: Options = {
   ...defaultState,
   ...urlState.options,
 };
@@ -43,7 +45,7 @@ export const configSlice = createSlice({
     },
   },
   extraReducers: {
-    [reset]() {
+    [reset as any]() {
       return defaultState;
     },
   },
@@ -58,9 +60,11 @@ export const {
   setTarget,
 } = configSlice.actions;
 
-export const selectOptions = (state) => state.data.present.options;
-export const selectTarget = (state) =>
+export const selectOptions = (state: RootState): Options =>
+  state.data.present.options;
+export const selectTarget = (state: RootState): Target =>
   targets[state.data.present.options.target];
-export const selectDepth = (state) => selectTarget(state).depth;
+export const selectDepth = (state: RootState): Bits =>
+  selectTarget(state).depth;
 
 export default configSlice.reducer;

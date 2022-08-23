@@ -1,4 +1,24 @@
-const targets = {
+import { Bits } from "../types";
+import { FormatKey } from "./output";
+
+export interface Target {
+  id: string;
+  label: string;
+  depth: Bits;
+  interlaced?: boolean;
+  outputs: FormatKey[];
+}
+
+export type TargetKey =
+  | "amigaOcs"
+  | "amigaAga"
+  | "amigaOcsLace"
+  | "atariSt"
+  | "atariSte"
+  | "atariFalcon"
+  | "atariFalconTruecolor";
+
+const targets: Record<TargetKey, Target> = {
   amigaOcs: {
     id: "amigaOcs",
     label: "Amiga OCS/ECS",
@@ -60,7 +80,6 @@ const targets = {
   atariFalconTruecolor: {
     id: "atariFalconTrue",
     label: "Atari Falcon Truecolor",
-    // depth: 5,
     depth: [5, 6, 5],
     outputs: ["tableAsm", "tableC", "tableStos", "tableBin", "imagePng"],
   },

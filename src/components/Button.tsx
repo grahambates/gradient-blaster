@@ -1,6 +1,17 @@
 import React from "react";
 import "./Button.css";
 
+export type ButtonProps = {
+  dark?: boolean;
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
+  minimal?: boolean;
+  href?: string;
+} & (
+  | React.ButtonHTMLAttributes<HTMLButtonElement>
+  | React.AnchorHTMLAttributes<HTMLAnchorElement>
+);
+
 function Button({
   dark,
   iconLeft,
@@ -9,7 +20,7 @@ function Button({
   children,
   href,
   ...rest
-}) {
+}: ButtonProps) {
   const classes = ["Button"];
   if (dark) {
     classes.push("Button--dark");
@@ -26,7 +37,11 @@ function Button({
 
   if (href) {
     return (
-      <a className={classes.join(" ")} href={href} {...rest}>
+      <a
+        className={classes.join(" ")}
+        href={href}
+        {...(rest as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+      >
         {iconLeft}
         {children}
         {iconRight}
@@ -34,7 +49,10 @@ function Button({
     );
   }
   return (
-    <button className={classes.join(" ")} {...rest}>
+    <button
+      className={classes.join(" ")}
+      {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+    >
       {iconLeft}
       {children}
       {iconRight}

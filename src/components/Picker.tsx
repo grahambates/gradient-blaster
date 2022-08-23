@@ -4,6 +4,7 @@ import { decodeHex3 } from "../lib/hex";
 import { quantize, restoreBits } from "../lib/bitDepth";
 import { clamp, fToPercent, rgbCssProp } from "../lib/utils";
 import { hsvToRgb, luminance, rgbToHsv } from "../lib/colorSpace";
+import { Bits, Color } from "../types";
 
 // Standard palette swatches, divided into rows
 const swatches = [
@@ -51,7 +52,13 @@ const swatches = [
   ],
 ].map((row) => row.map(decodeHex3).map((c) => restoreBits(c, 4)));
 
-const Picker = React.memo(({ hsv, depth, onChange }) => {
+export interface PickerProps {
+  hsv: Color;
+  depth: Bits;
+  onChange: (c: Color) => void;
+}
+
+const Picker = React.memo(({ hsv, depth, onChange }: PickerProps) => {
   return (
     <div className="Picker">
       <PickerSquare hsv={hsv} depth={depth} onChange={onChange} />
@@ -62,7 +69,7 @@ const Picker = React.memo(({ hsv, depth, onChange }) => {
             {row.map((rgb) => {
               return (
                 <button
-                  key={rgb}
+                  key={rgb.join(",")}
                   className="Picker__swatch"
                   style={{ background: rgbCssProp(rgb) }}
                   onClick={() => onChange(rgbToHsv(rgb))}
@@ -76,16 +83,18 @@ const Picker = React.memo(({ hsv, depth, onChange }) => {
   );
 });
 
-const PickerSquare = ({ hsv, depth, onChange }) => {
+const PickerSquare = ({ hsv, depth, onChange }: PickerProps) => {
   const width = 256;
   const height = 256;
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [h, s, v] = hsv;
 
   useEffect(() => {
-    /** @type CanvasRenderingContext2D */
-    const ctx = canvasRef.current.getContext("2d");
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!canvasRef.current || !ctx) {
+      return;
+    }
     const imageData = ctx.createImageData(width, height);
     let i = 0;
     for (let x = 0; x < width; x++) {
@@ -106,32 +115,34 @@ const PickerSquare = ({ hsv, depth, onChange }) => {
     ctx.putImageData(imageData, 0, 0);
   }, [h, depth]);
 
-  const handleMouseDown = useCallback(
-    (e) => {
-      const maxX = width - 1;
-      const maxY = height - 1;
+  const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> =
+    useCallback(
+      (e) => {
+        const maxX = width - 1;
+        const maxY = height - 1;
 
-      const dragMove = (e) => {
-        e.stopPropagation();
-        const y = e.pageY - canvasRef.current.offsetParent.offsetTop;
-        const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
-        const s = clamp(x / maxX);
-        const v = 1 - clamp(y / maxY);
-        onChange([h, s, v]);
-      };
+        const dragMove = (e: MouseEvent) => {
+          e.stopPropagation();
+          const parent = canvasRef.current?.offsetParent as HTMLDivElement;
+          const y = e.pageY - parent.offsetTop;
+          const x = e.pageX - parent.offsetLeft;
+          const s = clamp(x / maxX);
+          const v = 1 - clamp(y / maxY);
+          onChange([h, s, v]);
+        };
 
-      const dragStop = () => {
-        document.removeEventListener("mousemove", dragMove);
-        document.removeEventListener("mouseup", dragStop);
-      };
+        const dragStop = () => {
+          document.removeEventListener("mousemove", dragMove);
+          document.removeEventListener("mouseup", dragStop);
+        };
 
-      document.addEventListener("mousemove", dragMove);
-      document.addEventListener("mouseup", dragStop);
+        document.addEventListener("mousemove", dragMove);
+        document.addEventListener("mouseup", dragStop);
 
-      dragMove(e);
-    },
-    [h, onChange]
-  );
+        dragMove(e as any);
+      },
+      [h, onChange]
+    );
 
   const classes = ["PickerSquare__selection"];
   if (luminance(hsvToRgb(hsv)) > 128) {
@@ -157,16 +168,23 @@ const PickerSquare = ({ hsv, depth, onChange }) => {
   );
 };
 
-const HueStrip = ({ hsv, onChange }) => {
+interface HueStripProps {
+  hsv: Color;
+  onChange: (c: Color) => void;
+}
+
+const HueStrip = ({ hsv, onChange }: HueStripProps) => {
   const width = 256;
   const height = 14;
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [h, s, v] = hsv;
 
   useEffect(() => {
-    /** @type CanvasRenderingContext2D */
-    const ctx = canvasRef.current.getContext("2d");
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) {
+      return;
+    }
     for (let x = 0; x < width; x++) {
       const hue = x / (width - 1);
       const rgb = hsvToRgb([hue, 1, 1]);
@@ -175,29 +193,31 @@ const HueStrip = ({ hsv, onChange }) => {
     }
   }, []);
 
-  const handleMouseDown = useCallback(
-    (e) => {
-      const maxX = width - 1;
+  const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> =
+    useCallback(
+      (e) => {
+        const maxX = width - 1;
 
-      const dragMove = (e) => {
-        e.stopPropagation();
-        const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
-        const h1 = clamp(x / maxX);
-        onChange([h1, s, v]);
-      };
+        const dragMove = (e: MouseEvent) => {
+          e.stopPropagation();
+          const parent = canvasRef.current?.offsetParent as HTMLDivElement;
+          const x = e.pageX - parent.offsetLeft;
+          const h1 = clamp(x / maxX);
+          onChange([h1, s, v]);
+        };
 
-      const dragStop = () => {
-        document.removeEventListener("mousemove", dragMove);
-        document.removeEventListener("mouseup", dragStop);
-      };
+        const dragStop = () => {
+          document.removeEventListener("mousemove", dragMove);
+          document.removeEventListener("mouseup", dragStop);
+        };
 
-      document.addEventListener("mousemove", dragMove);
-      document.addEventListener("mouseup", dragStop);
+        document.addEventListener("mousemove", dragMove);
+        document.addEventListener("mouseup", dragStop);
 
-      dragMove(e);
-    },
-    [s, v, onChange]
-  );
+        dragMove(e as any);
+      },
+      [s, v, onChange]
+    );
 
   return (
     <div className="HueStrip" style={{ width: width + "px" }}>

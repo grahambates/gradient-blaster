@@ -1,8 +1,9 @@
+import { Color } from "../types";
 import { restoreBits } from "./bitDepth";
 import * as output from "./output";
 import targets from "./targets";
 
-const values = [...Array(255)].map((_, i) => [i, i, i]);
+const values: Color[] = [...Array(255)].map((_, i) => [i, i, i]);
 
 describe("output", () => {
   describe("buildCopperList()", () => {
@@ -687,7 +688,7 @@ describe("output", () => {
         [
           [0xa, 0xb, 0xc],
           [0x1, 0x2, 0x3],
-        ].map((v) => restoreBits(v, 4)),
+        ].map((v) => restoreBits(v as Color, 4)),
         targets.amigaOcs
       );
       expect(result).toEqual(new Uint8Array([0xa, 0xbc, 0x1, 0x23]));
@@ -711,7 +712,7 @@ describe("output", () => {
         [
           [0x1, 0x2, 0x3],
           [0x4, 0x5, 0x6],
-        ].map((v) => restoreBits(v, 3)),
+        ].map((v) => restoreBits(v as Color, 3)),
         targets.atariSt
       );
       expect(result).toEqual(new Uint8Array([0x1, 0x23, 0x4, 0x56]));
@@ -722,7 +723,7 @@ describe("output", () => {
         [
           [0xa, 0xb, 0xc],
           [0x1, 0x2, 0x3],
-        ].map((v) => restoreBits(v, 4)),
+        ].map((v) => restoreBits(v as Color, 4)),
         targets.atariSte
       );
       expect(result).toEqual(new Uint8Array([0x5, 0xd6, 0x8, 0x19]));
@@ -733,7 +734,7 @@ describe("output", () => {
         [
           [0x1f, 0x3f, 0x1f],
           [0x10, 0x08, 0x00],
-        ].map((v) => restoreBits(v, 6)),
+        ].map((v) => restoreBits(v as Color, 6)),
         targets.atariFalcon
       );
       expect(result).toEqual(new Uint8Array([124, 252, 0, 124, 64, 32, 0, 0]));
@@ -744,7 +745,7 @@ describe("output", () => {
         [
           [0x1f, 0x3f, 0x1f],
           [0x10, 0x08, 0x00],
-        ].map((v) => restoreBits(v, 6)),
+        ].map((v) => restoreBits(v as Color, 6)),
         targets.atariFalconTruecolor
       );
       expect(result).toEqual(new Uint8Array([127, 239, 65, 0]));

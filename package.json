@@ -35,6 +35,7 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "test": "jest",
+    "tsc": "tsc",
     "analyze": "source-map-explorer build/assets/index.*.js",
     "prepare": "husky install"
   },
@@ -68,6 +69,15 @@
             ".test.jsx": "jsx"
           }
         }
+      ],
+      "^.+\\.tsx?$": [
+        "esbuild-jest",
+        {
+          "sourcemap": true,
+          "loaders": {
+            ".test.tsx": "tsx"
+          }
+        }
       ]
     },
     "moduleNameMapper": {
@@ -83,6 +93,7 @@
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@types/qs": "^6.9.7",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.0.1",
@@ -97,6 +108,7 @@
     "jest-environment-jsdom": "^28.1.3",
     "prettier": "^2.7.1",
     "source-map-explorer": "^2.5.2",
+    "typescript": "^4.7.4",
     "vite": "^3.0.9"
   }
 }

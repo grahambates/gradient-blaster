@@ -1,3 +1,4 @@
+import { Bits, Color, Options, Point } from "../types";
 import { quantize } from "./bitDepth";
 import {
   hsvToRgb,
@@ -13,7 +14,7 @@ import { normalizeRgb, sameColors } from "./utils";
 
 const GOLDEN_RATIO = 1.61803399;
 
-export function buildGradient(points, options) {
+export function buildGradient(points: Point[], options: Options): Color[] {
   const { steps, blendMode, ditherMode, target } = options;
   const depth = targets[target].depth;
   const mappedPoints = [...points].map((p) => {
@@ -23,7 +24,7 @@ export function buildGradient(points, options) {
     return { y, color };
   });
 
-  let values = [];
+  let values: Color[] = [];
   let pointIndex = 0;
 
   for (let i = 0; i < steps; i++) {
@@ -49,20 +50,20 @@ export function buildGradient(points, options) {
       const pos = (i - current.y) / (next.y - current.y);
       const from = current.color;
       const to = next.color;
-      let mixed;
+      let mixed: Color;
       switch (blendMode) {
         case "lab":
-          mixed = labToRgb(lerpTuple(rgbToLab(from), rgbToLab(to), pos));
+          mixed = labToRgb(lerpColor(rgbToLab(from), rgbToLab(to), pos));
           break;
         // https://bottosson.github.io/posts/oklab/#blending-colors
         case "oklab":
-          mixed = oklabToRgb(lerpTuple(rgbToOklab(from), rgbToOklab(to), pos));
+          mixed = oklabToRgb(lerpColor(rgbToOklab(from), rgbToOklab(to), pos));
           break;
         case "perceptual":
           mixed = perceptualMix(from, to, pos);
           break;
         default:
-          mixed = lerpTuple(from, to, pos);
+          mixed = lerpColor(from, to, pos);
       }
       values.push(mixed);
     }
@@ -76,7 +77,7 @@ export function buildGradient(points, options) {
 }
 
 // https://stackoverflow.com/questions/22607043/color-gradient-algorithm
-function perceptualMix(color1, color2, pos) {
+function perceptualMix(color1: Color, color2: Color, pos: number): Color {
   const from = color1.map(srgbToLinear);
   const to = color2.map(srgbToLinear);
   const mixed = [
@@ -103,10 +104,13 @@ function perceptualMix(color1, color2, pos) {
     mixed[2] *= factor;
   }
 
-  return mixed.map(linearToSrgb);
+  return mixed.map(linearToSrgb) as Color;
 }
 
-function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
+function dither(
+  values: Color[],
+  { ditherMode, ditherAmount = 0, shuffleCount = 1, target }: Options
+) {
   if (ditherMode === "off") {
     return values;
   }
@@ -137,7 +141,7 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
   // Scale noise functions to color depth
   amount *= 4 / depthInt;
 
-  const sameOutput = (a, b) =>
+  const sameOutput = (a: Color, b: Color) =>
     sameColors(quantize(a, depth), quantize(b, depth));
 
   for (let i = 0; i < values.length; i++) {
@@ -227,13 +231,12 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
   return values;
 }
 
-function lerpTuple(from, to, pos) {
-  const ret = [
+function lerpColor(from: Color, to: Color, pos: number): Color {
+  return [
     Math.round(from[0] + (to[0] - from[0]) * pos),
     Math.round(from[1] + (to[1] - from[1]) * pos),
     Math.round(from[2] + (to[2] - from[2]) * pos),
   ];
-  return ret;
 }
 
 const blueNoise = [
@@ -243,20 +246,26 @@ const blueNoise = [
   55, 3, 30, 43,
 ].map((n) => n / 64 - 0.5);
 
-export function interlaceGradient(gradient, depth) {
-  const out = [[], []];
+type GradientPair = [Color[], Color[]];
 
-  const x = 1 << depth;
+export function interlaceGradient(
+  gradient: Color[],
+  depth: Bits
+): GradientPair {
+  const out: GradientPair = [[], []];
+  const depthInt = Array.isArray(depth) ? depth[0] : depth;
+
+  const x = 1 << depthInt;
   const divisor = 256 / x;
   const inc = divisor / 2;
 
   for (let col of gradient) {
-    let odd = quantize(col, depth).map((c) => c - inc);
-    odd = quantize(odd, depth - 1);
+    let odd = quantize(col, depthInt).map((c) => c - inc) as Color;
+    odd = quantize(odd, depthInt - 1);
     out[0].push(odd);
 
-    let even = quantize(col, depth).map((c) => c + inc);
-    even = quantize(even, depth - 1);
+    let even = quantize(col, depthInt).map((c) => c + inc) as Color;
+    even = quantize(even, depthInt - 1);
     out[1].push(even);
   }
 

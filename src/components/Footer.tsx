@@ -13,7 +13,9 @@ function Footer() {
       </div>
       <div>
         <MdHelp />
-        <a href="https://github.com/grahambates/gradient-blaster#readme">Documentation</a>
+        <a href="https://github.com/grahambates/gradient-blaster#readme">
+          Documentation
+        </a>
       </div>
       <div>
         <FaGithub />

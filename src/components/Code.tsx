@@ -1,8 +1,12 @@
 import React, { useRef, useEffect } from "react";
 import "./Code.css";
 
-const Code = ({ code }) => {
-  const preRef = useRef(null);
+export interface CodeProps {
+  code: string;
+}
+
+const Code = ({ code }: CodeProps) => {
+  const preRef = useRef<HTMLPreElement>(null);
   useEffect(() => {
     const processed = code
       .replace(/((\$|0x)[0-9a-f]+)/gi, "<span class='Code__hex'>$1</span>")
@@ -15,7 +19,7 @@ const Code = ({ code }) => {
         "<span class='Code__keyword'>$1</span>"
       );
 
-    preRef.current.innerHTML = processed;
+    preRef.current!.innerHTML = processed;
   }, [code]);
   return <pre className="Code" ref={preRef} />;
 };

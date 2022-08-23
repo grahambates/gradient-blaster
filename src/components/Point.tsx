@@ -2,9 +2,22 @@ import React, { useEffect, useState } from "react";
 import { quantize } from "../lib/bitDepth";
 import { hsvToRgb, luminance } from "../lib/colorSpace";
 import { rgbCssProp } from "../lib/utils";
+import { Bits, Color } from "../types";
 import "./Point.css";
 
 const REMOVE_THRESHOLD = 30;
+
+export interface PointProps {
+  y: number;
+  color: Color;
+  selected?: boolean;
+  onMove: (y: number) => void;
+  onClone: () => void;
+  onSelect: () => void;
+  onRemove: () => void;
+  initialDrag?: boolean;
+  depth: Bits;
+}
 
 function Point({
   y,
@@ -16,13 +29,13 @@ function Point({
   onRemove,
   initialDrag,
   depth,
-}) {
+}: PointProps) {
   const rgb = quantize(hsvToRgb(color), depth);
 
   const [isDragging, setIsDragging] = useState(initialDrag);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const handleClick = (e) => {
+  const handleClick: React.MouseEventHandler = (e) => {
     e.stopPropagation();
     if (e.altKey) {
       onClone();
@@ -32,11 +45,12 @@ function Point({
   };
 
   const startDrag = () => {
-    let offsetY, offsetX;
-    let isRemoving;
+    let offsetY: number;
+    let offsetX: number;
+    let isRemoving = false;
     document.body.classList.add("dragging");
 
-    const dragMove = (e) => {
+    const dragMove = (e: MouseEvent) => {
       e.stopPropagation();
       if (offsetX === undefined) {
         offsetY = e.clientY - y;

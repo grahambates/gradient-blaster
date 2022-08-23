@@ -8,8 +8,23 @@ import {
 } from "./hex";
 import { reduceBits } from "./bitDepth";
 import { sameColors } from "./utils";
+import { Target } from "./targets";
+import { Color } from "../types";
 
-export const formats = {
+export type FormatKey =
+  | "copperList"
+  | "tableAsm"
+  | "tableC"
+  | "tableAmos"
+  | "tableStos"
+  | "tableBin"
+  | "imagePng";
+
+export interface Format {
+  label: string;
+}
+
+export const formats: Record<FormatKey, Format> = {
   copperList: { label: "Copper list" },
   tableAsm: { label: "Table: asm" },
   tableC: { label: "Table: C" },
@@ -19,8 +34,17 @@ export const formats = {
   imagePng: { label: "PNG Image" },
 };
 
+export interface CopperListOptions {
+  startLine?: number;
+  varName: string;
+  colorIndex?: number;
+  waitStart?: boolean;
+  endList?: boolean;
+  target: Target;
+}
+
 export function buildCopperList(
-  gradient,
+  gradient: Color[],
   {
     startLine = 0x2b,
     varName,
@@ -28,8 +52,8 @@ export function buildCopperList(
     waitStart = true,
     endList = true,
     target,
-  }
-) {
+  }: CopperListOptions
+): string {
   const colorReg = "$" + (0x180 + colorIndex).toString(16);
   let output = [];
   if (varName) {
@@ -52,7 +76,7 @@ export function buildCopperList(
       lastCol = hex;
     } else {
       // AGA
-      if (!sameColors(lastCol, col)) {
+      if (!sameColors(lastCol as Color, col)) {
         const l = (line & 0xff).toString(16);
         if (line > startLine || waitStart) {
           output.push(`\tdc.w $${l}07,$fffe`);
@@ -77,7 +101,16 @@ export function buildCopperList(
   return output.join("\n");
 }
 
-export const formatTableAsm = (values, { rowSize, varName, target }) => {
+export interface TableOptions {
+  rowSize: number;
+  varName: string;
+  target: Target;
+}
+
+export const formatTableAsm = (
+  values: Color[],
+  { rowSize, varName, target }: TableOptions
+) => {
   let output = varName ? varName + ":\n" : "";
   const items = tableHexItems(values, target);
   const size = items[0]?.length > 4 ? "l" : "w";
@@ -87,7 +120,7 @@ export const formatTableAsm = (values, { rowSize, varName, target }) => {
   return output;
 };
 
-function tableHexItems(values, target) {
+function tableHexItems(values: Color[], target: Target) {
   const items = [];
   for (let col of values) {
     if (target.id === "atariSte") {
@@ -113,10 +146,10 @@ function tableHexItems(values, target) {
   return items;
 }
 
-function groupRows(items, rowSize) {
+function groupRows<T>(items: T[], rowSize: number): T[][] {
   const out = [];
   let current = [];
-  for (let i in items) {
+  for (let i = 0; i < items.length; i++) {
     if (i % rowSize === 0) {
       if (current.length) {
         out.push(current);
@@ -131,7 +164,10 @@ function groupRows(items, rowSize) {
   return out;
 }
 
-export const formatTableC = (values, { rowSize = 16, varName, target }) => {
+export const formatTableC = (
+  values: Color[],
+  { rowSize = 16, varName, target }: TableOptions
+) => {
   const items = tableHexItems(values, target);
   const size = items[0]?.length > 4 ? "long" : "short";
   let output = `unsigned ${size} ${varName}[${items.length}] = {\n`;
@@ -141,7 +177,7 @@ export const formatTableC = (values, { rowSize = 16, varName, target }) => {
   return output + "\n};";
 };
 
-export const gradientToBytes = (gradient, target) => {
+export const gradientToBytes = (gradient: Color[], target: Target) => {
   let bytes;
   let i = 0;
 
@@ -174,8 +210,9 @@ export const gradientToBytes = (gradient, target) => {
     }
   } else if (target.id === "atariFalconTrue") {
     bytes = new Uint8Array(gradient.length * 2);
-    for (const [a, b, c, d] of gradient.map((c) =>
-      decodeHex3(encodeHexFalconTrue(reduceBits(c, target.depth)))
+    for (const [a, b, c, d] of gradient.map(
+      (c) =>
+        decodeHex3(encodeHexFalconTrue(reduceBits(c, target.depth))) as number[]
     )) {
       bytes[i++] = (a << 4) + b;
       bytes[i++] = (c << 4) + d;
@@ -196,7 +233,7 @@ export const gradientToBytes = (gradient, target) => {
   return bytes;
 };
 
-export const base64Encode = (bytes) =>
+export const base64Encode = (bytes: Uint8Array) =>
   window.btoa(
     bytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
   );

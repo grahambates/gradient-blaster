@@ -1,13 +1,19 @@
 import qs from "qs";
+import { Bits, Options, Point } from "../types";
 import { reduceBits } from "./bitDepth";
 import { hsvToRgb, rgbToHsv } from "./colorSpace";
 import { encodeHex3, encodeHex6, hexToRgb } from "./hex";
-import targets from "./targets";
+import targets, { TargetKey } from "./targets";
 
-export const encodeUrlQuery = ({ points, options }) => {
+export type UrlArgs = {
+  points: Point[];
+  options: Options;
+};
+
+export const encodeUrlQuery = ({ points, options }: UrlArgs): string => {
   const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, target } =
     options;
-  const opts = { steps, blendMode, ditherMode, target };
+  const opts: Options = { steps, blendMode, ditherMode, target };
   if (!["off", "shuffle"].includes(ditherMode)) {
     opts.ditherAmount = ditherAmount;
   }
@@ -18,7 +24,7 @@ export const encodeUrlQuery = ({ points, options }) => {
   return `?points=${encodePoints(points, steps, depth)}&${qs.stringify(opts)}`;
 };
 
-export const decodeUrlQuery = (query) => {
+export const decodeUrlQuery = (query: string): Partial<UrlArgs> => {
   if (!query) return {};
   const {
     points,
@@ -28,7 +34,7 @@ export const decodeUrlQuery = (query) => {
     ditherAmount,
     shuffleCount,
     target,
-  } = qs.parse(query.substring(1));
+  } = qs.parse(query.substring(1)) as Record<string, string>;
   const options = {
     steps: intVal(steps),
     blendMode,
@@ -36,23 +42,24 @@ export const decodeUrlQuery = (query) => {
     ditherAmount: intVal(ditherAmount),
     shuffleCount: intVal(shuffleCount),
     target,
-  };
+  } as Options;
   // Remove undefined
   Object.keys(options).forEach((key) => {
-    if (options[key] === undefined) {
-      delete options[key];
+    if (options[key as keyof Options] === undefined) {
+      delete options[key as keyof Options];
     }
   });
-  const depth = target && targets[target].depth;
+  const depth = targets[target as TargetKey].depth ?? 4;
   return {
-    points: points && steps && decodePoints(points, options.steps, depth),
+    points: points && steps ? decodePoints(points, options.steps, depth) : [],
     options,
   };
 };
 
-const intVal = (str) => str && parseInt(str);
+const intVal = (str: string | undefined): number | undefined =>
+  str ? parseInt(str) : undefined;
 
-const encodePoints = (points, steps, depth) =>
+const encodePoints = (points: Point[], steps: number, depth: Bits): string =>
   points
     .map((p) => {
       const col =
@@ -63,10 +70,10 @@ const encodePoints = (points, steps, depth) =>
     })
     .join(",");
 
-const decodePoints = (encoded, steps, depth) =>
+const decodePoints = (encoded: string, steps: number, depth: Bits): Point[] =>
   encoded.split(",").map((n) => {
     const [hex, y] = n.split("@");
     const color = rgbToHsv(hexToRgb(hex, depth));
-    const pos = y / (steps - 1);
+    const pos = parseInt(y) / (steps - 1);
     return { color, pos };
   });

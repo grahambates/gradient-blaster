@@ -19,6 +19,7 @@ import Button from "./Button";
 import { decodeHex3, decodeHex6, encodeHex3, encodeHex6 } from "../lib/hex";
 import { quantize, reduceBits, restoreBits } from "../lib/bitDepth";
 import { hsvToRgb, luminance, rgbToHsv } from "../lib/colorSpace";
+import { Color } from "../types";
 
 function Detail() {
   const dispatch = useDispatch();
@@ -29,7 +30,7 @@ function Detail() {
 
   const selectedPoint = points[selectedIndex];
 
-  const handleMove = (newY) => {
+  const handleMove = (newY: number) => {
     const maxY = steps - 1;
     const pos = clamp(newY, 0, maxY) / maxY;
     dispatch(setPos(pos));
@@ -56,7 +57,7 @@ function Detail() {
   }
 
   const handleChangeColor = useCallback(
-    (color) => dispatch(setColor(color)),
+    (color: Color) => dispatch(setColor(color)),
     [dispatch]
   );
 
@@ -135,7 +136,7 @@ function Detail() {
               min={0}
               max={steps - 1}
               value={Math.round(selectedPoint.pos * (steps - 1))}
-              onChange={(e) => handleMove(e.target.value)}
+              onChange={(e) => handleMove(parseInt(e.target.value))}
             />
           </div>
         </div>

@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { RootState } from ".";
 import * as conv from "../lib/colorSpace";
 import { decodeUrlQuery } from "../lib/url";
+import { Point } from "../types";
 import { reset } from "./actions";
 
 const urlState = decodeUrlQuery(window.location.search);
@@ -9,16 +11,16 @@ const urlState = decodeUrlQuery(window.location.search);
 let id = 0;
 const nextId = () => id++;
 
-const defaultPoints = [
+const defaultPoints: Point[] = [
   { id: nextId(), pos: 0, color: conv.rgbToHsv([255, 255, 0]) },
-  { id: nextId(), pos: 1, color: conv.rgbToHsv([0, 0, 255]) }
+  { id: nextId(), pos: 1, color: conv.rgbToHsv([0, 0, 255]) },
 ];
 
 const initialState = {
   selectedIndex: 0,
   items: urlState.points
-    ? urlState.points.map(p => ({ id: nextId(), ...p }))
-    : defaultPoints
+    ? urlState.points.map((p) => ({ id: nextId(), ...p }))
+    : defaultPoints,
 };
 
 export const pointsSlice = createSlice({
@@ -28,23 +30,23 @@ export const pointsSlice = createSlice({
     addPoint: (state, action) => {
       const newPoint = {
         id: nextId(),
-        ...action.payload
+        ...action.payload,
       };
       state.items.push(newPoint);
       state.items.sort((a, b) => a.pos - b.pos);
-      state.selectedIndex = state.items.findIndex(p => p === newPoint);
+      state.selectedIndex = state.items.findIndex((p) => p === newPoint);
     },
-    removePoint: state => {
+    removePoint: (state) => {
       if (state.items.length > 2) {
         state.items.splice(state.selectedIndex, 1);
         state.selectedIndex = Math.max(state.selectedIndex - 1, 0);
       }
     },
-    clonePoint: state => {
+    clonePoint: (state) => {
       const selected = state.items[state.selectedIndex];
       const clonedPoint = {
         ...selected,
-        id: nextId()
+        id: nextId(),
       };
       state.items.splice(state.selectedIndex + 1, 0, clonedPoint);
     },
@@ -52,7 +54,7 @@ export const pointsSlice = createSlice({
       const selected = state.items[state.selectedIndex];
       selected.pos = action.payload;
       state.items.sort((a, b) => a.pos - b.pos);
-      state.selectedIndex = state.items.findIndex(p => p === selected);
+      state.selectedIndex = state.items.findIndex((p) => p === selected);
     },
     setColor: (state, action) => {
       state.items[state.selectedIndex].color = action.payload;
@@ -60,21 +62,21 @@ export const pointsSlice = createSlice({
     selectIndex: (state, action) => {
       state.selectedIndex = action.payload;
     },
-    previousPoint: state => {
+    previousPoint: (state) => {
       state.selectedIndex -= 1;
     },
-    nextPoint: state => {
+    nextPoint: (state) => {
       state.selectedIndex += 1;
-    }
+    },
   },
   extraReducers: {
-    [reset]() {
+    [reset as any]() {
       return {
         selectedIndex: 0,
-        items: defaultPoints
+        items: defaultPoints,
       };
-    }
-  }
+    },
+  },
 });
 
 export const {
@@ -85,11 +87,12 @@ export const {
   setColor,
   selectIndex,
   previousPoint,
-  nextPoint
+  nextPoint,
 } = pointsSlice.actions;
 
-export const selectPoints = state => state.data.present.points.items;
-export const selectSelectedIndex = state =>
+export const selectPoints = (state: RootState): Point[] =>
+  state.data.present.points.items;
+export const selectSelectedIndex = (state: RootState): number =>
   state.data.present.points.selectedIndex;
 
 export default pointsSlice.reducer;

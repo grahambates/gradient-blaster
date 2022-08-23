@@ -11,7 +11,7 @@ import {
   setTarget,
   selectOptions,
 } from "../store/options";
-import targets from "../lib/targets";
+import targets, { TargetKey } from "../lib/targets";
 
 function Options() {
   const dispatch = useDispatch();
@@ -56,7 +56,7 @@ function Options() {
         >
           {Object.keys(targets).map((key) => (
             <option key={key} value={key}>
-              {targets[key].label}
+              {targets[key as TargetKey].label}
             </option>
           ))}
         </select>

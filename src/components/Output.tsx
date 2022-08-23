@@ -5,31 +5,35 @@ import { FaCopy, FaDownload } from "react-icons/fa";
 import "./Output.css";
 import { selectGradient } from "../store";
 import { selectOptions, selectTarget } from "../store/options";
-import * as conv from "../lib/colorSpace";
 import * as output from "../lib/output";
 import { encodeUrlQuery } from "../lib/url";
 import { interlaceGradient } from "../lib/gradient";
 import Button from "./Button";
 import Code from "./Code";
 import { selectPoints } from "../store/points";
+import { Color } from "../types";
+import { Target } from "../lib/targets";
+import { quantize } from "../lib/bitDepth";
+import { rgbCssProp } from "../lib/utils";
 
 const DEBOUNCE_DELAY = 100;
 
 const baseUrl = window.location.href.split("?")[0];
 
 function Output() {
-  const [outputFormat, setOutputFormat] = useState("copperList");
+  const [outputFormat, setOutputFormat] =
+    useState<output.FormatKey>("copperList");
   const options = useSelector(selectOptions);
   const points = useSelector(selectPoints);
   const gradient = useSelector(selectGradient);
   const target = useSelector(selectTarget);
 
   // Delay update to output for performance i.e. dont generate 1000s of times while dragging
-  const [debouncedGradient, setDebouncedGradient] = useState(gradient);
+  const [debouncedGradient, setDebouncedGradient] = useState<Color[]>(gradient);
   const [debouncedQuery, setDebouncedQuery] = useState(
     encodeUrlQuery({ points, options })
   );
-  const timeout = useRef(0);
+  const timeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (timeout.current) clearTimeout(timeout.current);
@@ -39,7 +43,7 @@ function Output() {
       setDebouncedQuery(query);
       setDebouncedGradient(gradient);
       // Update URL path
-      window.history.replaceState({}, null, window.location.pathname + query);
+      window.history.replaceState({}, "", window.location.pathname + query);
     }, DEBOUNCE_DELAY);
   }, [points, options, gradient]);
 
@@ -56,7 +60,7 @@ function Output() {
         <select
           id="Output-format"
           value={outputFormat}
-          onChange={(e) => setOutputFormat(e.target.value)}
+          onChange={(e) => setOutputFormat(e.target.value as output.FormatKey)}
         >
           {target.outputs.map((key) => (
             <option value={key} key={key}>
@@ -106,18 +110,22 @@ function Output() {
   );
 }
 
-const Table = React.memo(({ gradient, query, target, lang }) => {
-  let commentPrefix, fn, ext;
+interface TableProps {
+  gradient: Color[];
+  query: string;
+  target: Target;
+  lang: string;
+}
+
+const Table = React.memo(({ gradient, query, target, lang }: TableProps) => {
+  let commentPrefix: string;
+  let fn: (gradient: Color[], opts: output.TableOptions) => string;
+  let ext: string;
   switch (lang) {
     case "c":
       commentPrefix = "// ";
       fn = output.formatTableC;
       ext = "c";
-      break;
-    case "asm":
-      commentPrefix = "; ";
-      fn = output.formatTableAsm;
-      ext = "s";
       break;
     case "amos":
       commentPrefix = "Rem ";
@@ -126,6 +134,11 @@ const Table = React.memo(({ gradient, query, target, lang }) => {
       ext = "txt";
       break;
     default:
+    case "asm":
+      commentPrefix = "; ";
+      fn = output.formatTableAsm;
+      ext = "s";
+      break;
   }
 
   const defaultLength = target.id === "atariFalcon" ? 4 : 8;
@@ -177,7 +190,7 @@ const Table = React.memo(({ gradient, query, target, lang }) => {
             min="1"
             max="1000"
             value={rowSize}
-            onChange={(e) => setRowSize(e.target.value)}
+            onChange={(e) => setRowSize(parseInt(e.currentTarget.value))}
           />
         </div>
         {target.interlaced ? (
@@ -217,7 +230,12 @@ const Table = React.memo(({ gradient, query, target, lang }) => {
   );
 });
 
-const TableBin = React.memo(({ gradient, target }) => {
+interface TableBinProps {
+  gradient: Color[];
+  target: Target;
+}
+
+const TableBin = React.memo(({ gradient, target }: TableBinProps) => {
   if (target.interlaced) {
     const [odd, even] = interlaceGradient(gradient, target.depth);
     const oddBytes = output.gradientToBytes(odd, target);
@@ -252,141 +270,157 @@ const TableBin = React.memo(({ gradient, target }) => {
   }
 });
 
-const CopperList = React.memo(({ gradient, query, target }) => {
-  const [startLine, setStartLine] = useState(0x2b);
-  const [colorIndex, setColorIndex] = useState(0);
-  const [varName, setVarName] = useState("Gradient");
-  const [varNameA, setVarNameA] = useState("GradientOdd");
-  const [varNameB, setVarNameB] = useState("GradientEven");
-  const [waitStart, setWaitStart] = useState(true);
-  const [endList, setEndList] = useState(true);
+interface CopperListProps {
+  gradient: Color[];
+  query: string;
+  target: Target;
+}
 
-  let code = "; " + baseUrl + query + "\n";
-  if (target.interlaced) {
-    const [odd, even] = interlaceGradient(gradient, target.depth);
-    code += output.buildCopperList(odd, {
-      varName: varNameA,
-      colorIndex,
-      startLine,
-      waitStart,
-      endList,
-      target,
-    });
-    code += "\n";
-    code += output.buildCopperList(even, {
-      varName: varNameB,
-      colorIndex,
-      startLine,
-      waitStart,
-      endList,
-      target,
-    });
-  } else {
-    code += output.buildCopperList(gradient, {
-      varName,
-      colorIndex,
-      startLine,
-      waitStart,
-      endList,
-      target,
-    });
-  }
+const CopperList = React.memo(
+  ({ gradient, query, target }: CopperListProps) => {
+    const [startLine, setStartLine] = useState(0x2b);
+    const [colorIndex, setColorIndex] = useState(0);
+    const [varName, setVarName] = useState("Gradient");
+    const [varNameA, setVarNameA] = useState("GradientOdd");
+    const [varNameB, setVarNameB] = useState("GradientEven");
+    const [waitStart, setWaitStart] = useState(true);
+    const [endList, setEndList] = useState(true);
 
-  return (
-    <>
-      <div className="Output__actions">
-        <CopyLink code={code} />
-        <DownloadLink data={code} filename="gradient.s" />
-      </div>
-      <Code code={code} />
+    let code = "; " + baseUrl + query + "\n";
+    if (target.interlaced) {
+      const [odd, even] = interlaceGradient(gradient, target.depth);
+      code += output.buildCopperList(odd, {
+        varName: varNameA,
+        colorIndex,
+        startLine,
+        waitStart,
+        endList,
+        target,
+      });
+      code += "\n";
+      code += output.buildCopperList(even, {
+        varName: varNameB,
+        colorIndex,
+        startLine,
+        waitStart,
+        endList,
+        target,
+      });
+    } else {
+      code += output.buildCopperList(gradient, {
+        varName,
+        colorIndex,
+        startLine,
+        waitStart,
+        endList,
+        target,
+      });
+    }
 
-      <div className="Output__formatOptions">
-        <div>
-          <label htmlFor="Output-startLine">Start line: </label>
-          <input
-            id="Output-startLine"
-            type="text"
-            value={startLine ? startLine.toString(16) : ""}
-            onChange={(e) => setStartLine(parseInt(e.target.value, 16))}
-          />
+    return (
+      <>
+        <div className="Output__actions">
+          <CopyLink code={code} />
+          <DownloadLink data={code} filename="gradient.s" />
         </div>
-        <div>
-          <label htmlFor="Output-colorIndex">Color index: </label>
-          <input
-            id="Output-colorIndex"
-            type="number"
-            min="0"
-            max="31"
-            value={colorIndex}
-            onChange={(e) => setColorIndex(parseInt(e.target.value))}
-          />
-        </div>
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={waitStart}
-              onChange={(e) => setWaitStart(e.target.checked)}
-            />{" "}
-            Wait for start
-          </label>
-          <br />
-          <label>
-            <input
-              type="checkbox"
-              checked={endList}
-              onChange={(e) => setEndList(e.target.checked)}
-            />{" "}
-            End copper list
-          </label>
-        </div>
-        {target.interlaced ? (
-          <div className="Output__labels">
-            <div>
-              <label htmlFor="Output-varNameA">Label (odd):</label>
-              <input
-                id="Output-varNameA"
-                type="text"
-                value={varNameA}
-                onChange={(e) => setVarNameA(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="Output-varNameB">Label (even):</label>
-              <input
-                id="Output-varNameB"
-                type="text"
-                value={varNameB}
-                onChange={(e) => setVarNameB(e.target.value)}
-              />
-            </div>
-          </div>
-        ) : (
+        <Code code={code} />
+
+        <div className="Output__formatOptions">
           <div>
-            <label htmlFor="Output-varName">Label: </label>
+            <label htmlFor="Output-startLine">Start line: </label>
             <input
-              id="Output-varName"
+              id="Output-startLine"
               type="text"
-              value={varName}
-              onChange={(e) => setVarName(e.target.value)}
+              value={startLine ? startLine.toString(16) : ""}
+              onChange={(e) => setStartLine(parseInt(e.target.value, 16))}
             />
           </div>
-        )}
-      </div>
-    </>
-  );
-});
+          <div>
+            <label htmlFor="Output-colorIndex">Color index: </label>
+            <input
+              id="Output-colorIndex"
+              type="number"
+              min="0"
+              max="31"
+              value={colorIndex}
+              onChange={(e) => setColorIndex(parseInt(e.target.value))}
+            />
+          </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={waitStart}
+                onChange={(e) => setWaitStart(e.target.checked)}
+              />{" "}
+              Wait for start
+            </label>
+            <br />
+            <label>
+              <input
+                type="checkbox"
+                checked={endList}
+                onChange={(e) => setEndList(e.target.checked)}
+              />{" "}
+              End copper list
+            </label>
+          </div>
+          {target.interlaced ? (
+            <div className="Output__labels">
+              <div>
+                <label htmlFor="Output-varNameA">Label (odd):</label>
+                <input
+                  id="Output-varNameA"
+                  type="text"
+                  value={varNameA}
+                  onChange={(e) => setVarNameA(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="Output-varNameB">Label (even):</label>
+                <input
+                  id="Output-varNameB"
+                  type="text"
+                  value={varNameB}
+                  onChange={(e) => setVarNameB(e.target.value)}
+                />
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label htmlFor="Output-varName">Label: </label>
+              <input
+                id="Output-varName"
+                type="text"
+                value={varName}
+                onChange={(e) => setVarName(e.target.value)}
+              />
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+);
 
-function ImagePng({ gradient, target }) {
+interface ImagePngProps {
+  gradient: Color[];
+  target: Target;
+}
+
+function ImagePng({ gradient, target }: ImagePngProps) {
   const [width, setWidth] = useState(gradient.length);
-  const canvasRef = useRef(null);
-  const [data, setData] = useState();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [data, setData] = useState("");
 
   useEffect(() => {
-    const ctx = canvasRef.current.getContext("2d");
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!canvasRef.current || !ctx) {
+      return;
+    }
     for (let i = 0; i < gradient.length; i++) {
-      let color = conv.quantize(gradient[i], target.depth);
-      ctx.fillStyle = conv.rgbCssProp(color);
+      let color = quantize(gradient[i], target.depth);
+      ctx.fillStyle = rgbCssProp(color);
       ctx.fillRect(0, i, width, i);
     }
     setData(canvasRef.current.toDataURL());
@@ -420,7 +454,11 @@ function ImagePng({ gradient, target }) {
   );
 }
 
-function CopyLink({ code }) {
+interface CopyLinkProps {
+  code: string;
+}
+
+function CopyLink({ code }: CopyLinkProps) {
   return (
     <Button
       iconLeft={<FaCopy />}
@@ -437,12 +475,19 @@ function CopyLink({ code }) {
   );
 }
 
+interface DownloadLinkProps {
+  data: string;
+  filename: string;
+  mimetype?: string;
+  label?: string;
+}
+
 function DownloadLink({
   data,
   filename,
   mimetype = "text/plain;charset=utf-8",
   label = "Download",
-}) {
+}: DownloadLinkProps) {
   const codeHref = `data:${mimetype},` + encodeURIComponent(data);
   return (
     <Button iconLeft={<FaDownload />} href={codeHref} download={filename}>

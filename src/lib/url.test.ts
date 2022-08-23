@@ -1,3 +1,4 @@
+import { Options } from "../types";
 import { rgbToHsv } from "./colorSpace";
 import * as url from "./url";
 
@@ -5,14 +6,14 @@ const points = [
   { color: rgbToHsv([0, 0, 0]), pos: 0 },
   { color: rgbToHsv([255, 255, 255]), pos: 1 },
 ];
-const options = {
+const options: Options = {
   steps: 16,
   blendMode: "oklab",
   ditherMode: "blueNoise",
   ditherAmount: 30,
   target: "amigaOcs",
 };
-const agaOptions = {
+const agaOptions: Options = {
   ...options,
   target: "amigaAga",
 };
