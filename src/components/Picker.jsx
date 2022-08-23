@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import "./Picker.css";
-import * as conv from "../lib/colorConvert";
+import { decodeHex3 } from "../lib/hex";
+import { quantize, restoreBits } from "../lib/bitDepth";
+import { clamp, fToPercent, rgbCssProp } from "../lib/utils";
+import { hsvToRgb, luminance, rgbToHsv } from "../lib/colorSpace";
 
 // Standard palette swatches, divided into rows
 const swatches = [
@@ -46,7 +49,7 @@ const swatches = [
     "639",
     "a19",
   ],
-].map((row) => row.map(conv.decodeHex3).map((c) => conv.restoreBits(c, 4)));
+].map((row) => row.map(decodeHex3).map((c) => restoreBits(c, 4)));
 
 const Picker = React.memo(({ hsv, depth, onChange }) => {
   return (
@@ -61,8 +64,8 @@ const Picker = React.memo(({ hsv, depth, onChange }) => {
                 <button
                   key={rgb}
                   className="Picker__swatch"
-                  style={{ background: conv.rgbCssProp(rgb) }}
-                  onClick={() => onChange(conv.rgbToHsv(rgb))}
+                  style={{ background: rgbCssProp(rgb) }}
+                  onClick={() => onChange(rgbToHsv(rgb))}
                 />
               );
             })}
@@ -89,8 +92,8 @@ const PickerSquare = ({ hsv, depth, onChange }) => {
       for (let y = 0; y < height; y++) {
         const s1 = y / (height - 1);
         const v1 = 1 - x / (width - 1);
-        let color = conv.hsvToRgb([h, s1, v1]);
-        color = conv.quantize(color, depth);
+        let color = hsvToRgb([h, s1, v1]);
+        color = quantize(color, depth);
         const [r, g, b] = color;
 
         imageData.data[i++] = r;
@@ -112,8 +115,8 @@ const PickerSquare = ({ hsv, depth, onChange }) => {
         e.stopPropagation();
         const y = e.pageY - canvasRef.current.offsetParent.offsetTop;
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
-        const s = conv.clamp(x / maxX);
-        const v = 1 - conv.clamp(y / maxY);
+        const s = clamp(x / maxX);
+        const v = 1 - clamp(y / maxY);
         onChange([h, s, v]);
       };
 
@@ -131,7 +134,7 @@ const PickerSquare = ({ hsv, depth, onChange }) => {
   );
 
   const classes = ["PickerSquare__selection"];
-  if (conv.luminance(conv.hsvToRgb(hsv)) > 128) {
+  if (luminance(hsvToRgb(hsv)) > 128) {
     classes.push("light");
   }
 
@@ -147,7 +150,7 @@ const PickerSquare = ({ hsv, depth, onChange }) => {
         onMouseDown={handleMouseDown}
       />
       <div
-        style={{ top: conv.fToPercent(1 - v), left: conv.fToPercent(s) }}
+        style={{ top: fToPercent(1 - v), left: fToPercent(s) }}
         className={classes.join(" ")}
       />
     </div>
@@ -166,8 +169,8 @@ const HueStrip = ({ hsv, onChange }) => {
     const ctx = canvasRef.current.getContext("2d");
     for (let x = 0; x < width; x++) {
       const hue = x / (width - 1);
-      const rgb = conv.hsvToRgb([hue, 1, 1]);
-      ctx.fillStyle = conv.rgbCssProp(rgb);
+      const rgb = hsvToRgb([hue, 1, 1]);
+      ctx.fillStyle = rgbCssProp(rgb);
       ctx.fillRect(x, 0, 1, height);
     }
   }, []);
@@ -179,7 +182,7 @@ const HueStrip = ({ hsv, onChange }) => {
       const dragMove = (e) => {
         e.stopPropagation();
         const x = e.pageX - canvasRef.current.offsetParent.offsetLeft;
-        const h1 = conv.clamp(x / maxX);
+        const h1 = clamp(x / maxX);
         onChange([h1, s, v]);
       };
 
@@ -204,10 +207,7 @@ const HueStrip = ({ hsv, onChange }) => {
         height={height}
         onMouseDown={handleMouseDown}
       />
-      <div
-        style={{ left: conv.fToPercent(h) }}
-        className="HueStrip__selection"
-      />
+      <div style={{ left: fToPercent(h) }} className="HueStrip__selection" />
     </div>
   );
 };

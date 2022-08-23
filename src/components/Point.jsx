@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import * as conv from "../lib/colorConvert";
+import { quantize } from "../lib/bitDepth";
+import { hsvToRgb, luminance } from "../lib/colorSpace";
+import { rgbCssProp } from "../lib/utils";
 import "./Point.css";
 
 const REMOVE_THRESHOLD = 30;
@@ -15,7 +17,7 @@ function Point({
   initialDrag,
   depth,
 }) {
-  const rgb = conv.quantize(conv.hsvToRgb(color), depth);
+  const rgb = quantize(hsvToRgb(color), depth);
 
   const [isDragging, setIsDragging] = useState(initialDrag);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -83,7 +85,7 @@ function Point({
   if (isRemoving) {
     classes.push("removing");
   }
-  if (conv.luminance(rgb) > 128) {
+  if (luminance(rgb) > 128) {
     classes.push("light");
   }
 
@@ -92,7 +94,7 @@ function Point({
       className={classes.join(" ")}
       style={{
         top: y + "px",
-        color: conv.rgbCssProp(rgb),
+        color: rgbCssProp(rgb),
       }}
       onMouseDown={handleClick}
     ></div>

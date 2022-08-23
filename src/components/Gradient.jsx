@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./Gradient.css";
-import * as conv from "../lib/colorConvert";
 import Point from "./Point";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -15,6 +14,9 @@ import {
 import { selectOptions, selectTarget } from "../store/options";
 import { selectGradient } from "../store";
 import { interlaceGradient } from "../lib/gradient";
+import { rgbToHsv } from "../lib/colorSpace";
+import { quantize } from "../lib/bitDepth";
+import { clamp, rgbCssProp } from "../lib/utils";
 
 function Gradient() {
   const dispatch = useDispatch();
@@ -54,14 +56,14 @@ function Gradient() {
     dispatch(
       addPoint({
         pos: y / (height - 1),
-        color: conv.rgbToHsv(sample),
+        color: rgbToHsv(sample),
       })
     );
   };
 
   const handleMove = (newY) => {
     const maxY = steps * scale - scale;
-    const pos = conv.clamp(newY, 0, maxY) / maxY;
+    const pos = clamp(newY, 0, maxY) / maxY;
     dispatch(setPos(pos));
   };
 
@@ -148,8 +150,8 @@ function Canvas({ gradient, scale, depth }) {
 
     for (let i = 0; i < steps; i++) {
       let col = gradient[i];
-      col = conv.quantize(col, depth);
-      ctx.fillStyle = conv.rgbCssProp(col);
+      col = quantize(col, depth);
+      ctx.fillStyle = rgbCssProp(col);
       ctx.fillRect(0, i * scale, width, scale);
     }
   }, [steps, scale, depth, gradient]);
@@ -177,9 +179,9 @@ function CanvasLaced({ gradient, scale, depth }) {
     const [odd, even] = interlaceGradient(gradient, depth);
 
     for (let i = 0; i < steps; i++) {
-      ctxA.fillStyle = conv.rgbCssProp(odd[i]);
+      ctxA.fillStyle = rgbCssProp(odd[i]);
       ctxA.fillRect(0, i * scale, width, scale);
-      ctxB.fillStyle = conv.rgbCssProp(even[i]);
+      ctxB.fillStyle = rgbCssProp(even[i]);
       ctxB.fillRect(0, i * scale, width, scale);
     }
 

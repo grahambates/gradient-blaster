@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FaTrash, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-import * as conv from "../lib/colorConvert";
 import "./Detail.css";
 import {
   removePoint,
@@ -14,9 +13,12 @@ import {
   nextPoint,
 } from "../store/points";
 import { selectOptions, selectDepth } from "../store/options";
-import { clamp } from "../lib/colorConvert";
+import { clamp, rgbCssProp } from "../lib/utils";
 import Picker from "./Picker";
 import Button from "./Button";
+import { decodeHex3, decodeHex6, encodeHex3, encodeHex6 } from "../lib/hex";
+import { quantize, reduceBits, restoreBits } from "../lib/bitDepth";
+import { hsvToRgb, luminance, rgbToHsv } from "../lib/colorSpace";
 
 function Detail() {
   const dispatch = useDispatch();
@@ -36,17 +38,17 @@ function Detail() {
   const [hex, setHex] = useState("");
 
   useEffect(() => {
-    const rgb = conv.reduceBits(conv.hsvToRgb(selectedPoint.color), depth);
+    const rgb = reduceBits(hsvToRgb(selectedPoint.color), depth);
     if (depth <= 4) {
-      setHex(conv.encodeHex3(rgb));
+      setHex(encodeHex3(rgb));
     } else {
-      setHex(conv.encodeHex6(rgb));
+      setHex(encodeHex6(rgb));
     }
   }, [selectedPoint.color, depth]);
 
-  const rgb = conv.hsvToRgb(selectedPoint.color);
-  const color = conv.rgbCssProp(conv.quantize(rgb, depth));
-  const light = conv.luminance(rgb) > 128;
+  const rgb = hsvToRgb(selectedPoint.color);
+  const color = rgbCssProp(quantize(rgb, depth));
+  const light = luminance(rgb) > 128;
 
   const classes = ["Detail__header"];
   if (light) {
@@ -116,13 +118,11 @@ function Detail() {
                   return;
                 }
                 if (depth <= 4) {
-                  const newRgb = conv.decodeHex3(newHex);
-                  dispatch(
-                    setColor(conv.rgbToHsv(conv.restoreBits(newRgb, depth)))
-                  );
+                  const newRgb = decodeHex3(newHex);
+                  dispatch(setColor(rgbToHsv(restoreBits(newRgb, depth))));
                 } else {
-                  const newRgb = conv.decodeHex6(newHex);
-                  dispatch(setColor(conv.rgbToHsv(newRgb)));
+                  const newRgb = decodeHex6(newHex);
+                  dispatch(setColor(rgbToHsv(newRgb)));
                 }
               }}
             />

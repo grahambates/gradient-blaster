@@ -1,5 +1,7 @@
 import qs from "qs";
-import * as conv from "./colorConvert";
+import { reduceBits } from "./bitDepth";
+import { hsvToRgb, rgbToHsv } from "./colorSpace";
+import { encodeHex3, encodeHex6, hexToRgb } from "./hex";
 import targets from "./targets";
 
 export const encodeUrlQuery = ({ points, options }) => {
@@ -13,9 +15,7 @@ export const encodeUrlQuery = ({ points, options }) => {
     opts.shuffleCount = shuffleCount;
   }
   const depth = targets[target].depth;
-  return `?points=${encodePoints(points.items, steps, depth)}&${qs.stringify(
-    opts
-  )}`;
+  return `?points=${encodePoints(points, steps, depth)}&${qs.stringify(opts)}`;
 };
 
 export const decodeUrlQuery = (query) => {
@@ -57,8 +57,8 @@ const encodePoints = (points, steps, depth) =>
     .map((p) => {
       const col =
         depth <= 4
-          ? conv.encodeHex3(conv.reduceBits(conv.hsvToRgb(p.color), depth))
-          : conv.encodeHex6(conv.hsvToRgb(p.color));
+          ? encodeHex3(reduceBits(hsvToRgb(p.color), depth))
+          : encodeHex6(hsvToRgb(p.color));
       return col + "@" + Math.round(p.pos * (steps - 1));
     })
     .join(",");
@@ -66,7 +66,7 @@ const encodePoints = (points, steps, depth) =>
 const decodePoints = (encoded, steps, depth) =>
   encoded.split(",").map((n) => {
     const [hex, y] = n.split("@");
-    const color = conv.rgbToHsv(conv.hexToRgb(hex, depth));
+    const color = rgbToHsv(hexToRgb(hex, depth));
     const pos = y / (steps - 1);
     return { color, pos };
   });

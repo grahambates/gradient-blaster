@@ -3,14 +3,15 @@ import { useSelector } from "react-redux";
 import { FaCopy, FaDownload } from "react-icons/fa";
 
 import "./Output.css";
-import { selectGradient, selectPresentData } from "../store";
-import { selectTarget } from "../store/options";
-import * as conv from "../lib/colorConvert";
+import { selectGradient } from "../store";
+import { selectOptions, selectTarget } from "../store/options";
+import * as conv from "../lib/colorSpace";
 import * as output from "../lib/output";
 import { encodeUrlQuery } from "../lib/url";
 import { interlaceGradient } from "../lib/gradient";
 import Button from "./Button";
 import Code from "./Code";
+import { selectPoints } from "../store/points";
 
 const DEBOUNCE_DELAY = 100;
 
@@ -18,25 +19,29 @@ const baseUrl = window.location.href.split("?")[0];
 
 function Output() {
   const [outputFormat, setOutputFormat] = useState("copperList");
-  const present = useSelector(selectPresentData);
+  const options = useSelector(selectOptions);
+  const points = useSelector(selectPoints);
   const gradient = useSelector(selectGradient);
   const target = useSelector(selectTarget);
 
   // Delay update to output for performance i.e. dont generate 1000s of times while dragging
   const [debouncedGradient, setDebouncedGradient] = useState(gradient);
-  const [debouncedQuery, setDebouncedQuery] = useState(encodeUrlQuery(present));
+  const [debouncedQuery, setDebouncedQuery] = useState(
+    encodeUrlQuery({ points, options })
+  );
   const timeout = useRef(0);
 
   useEffect(() => {
     if (timeout.current) clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
-      const query = encodeUrlQuery(present);
+      const query = encodeUrlQuery({ points, options });
+
       setDebouncedQuery(query);
       setDebouncedGradient(gradient);
       // Update URL path
       window.history.replaceState({}, null, window.location.pathname + query);
     }, DEBOUNCE_DELAY);
-  }, [present, gradient]);
+  }, [points, options, gradient]);
 
   useEffect(() => {
     if (!target.outputs.includes(outputFormat)) {

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import * as conv from "../lib/colorConvert";
+import * as conv from "../lib/colorSpace";
 import { decodeUrlQuery } from "../lib/url";
 import { reset } from "./actions";
 

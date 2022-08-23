@@ -1,5 +1,15 @@
-import * as conv from "./colorConvert";
+import { quantize } from "./bitDepth";
+import {
+  hsvToRgb,
+  labToRgb,
+  linearToSrgb,
+  oklabToRgb,
+  rgbToLab,
+  rgbToOklab,
+  srgbToLinear,
+} from "./colorSpace";
 import targets from "./targets";
+import { normalizeRgb, sameColors } from "./utils";
 
 const GOLDEN_RATIO = 1.61803399;
 
@@ -7,8 +17,8 @@ export function buildGradient(points, options) {
   const { steps, blendMode, ditherMode, target } = options;
   const depth = targets[target].depth;
   const mappedPoints = [...points].map((p) => {
-    let color = conv.hsvToRgb(p.color);
-    color = conv.quantize(color, depth);
+    let color = hsvToRgb(p.color);
+    color = quantize(color, depth);
     const y = Math.round(p.pos * (steps - 1));
     return { y, color };
   });
@@ -42,15 +52,11 @@ export function buildGradient(points, options) {
       let mixed;
       switch (blendMode) {
         case "lab":
-          mixed = conv.labToRgb(
-            lerpTuple(conv.rgbToLab(from), conv.rgbToLab(to), pos)
-          );
+          mixed = labToRgb(lerpTuple(rgbToLab(from), rgbToLab(to), pos));
           break;
         // https://bottosson.github.io/posts/oklab/#blending-colors
         case "oklab":
-          mixed = conv.oklabToRgb(
-            lerpTuple(conv.rgbToOklab(from), conv.rgbToOklab(to), pos)
-          );
+          mixed = oklabToRgb(lerpTuple(rgbToOklab(from), rgbToOklab(to), pos));
           break;
         case "perceptual":
           mixed = perceptualMix(from, to, pos);
@@ -66,13 +72,13 @@ export function buildGradient(points, options) {
     values = dither(values, options);
   }
 
-  return values.map(conv.normalizeRgb);
+  return values.map(normalizeRgb);
 }
 
 // https://stackoverflow.com/questions/22607043/color-gradient-algorithm
 function perceptualMix(color1, color2, pos) {
-  const from = color1.map(conv.srgbToLinear);
-  const to = color2.map(conv.srgbToLinear);
+  const from = color1.map(srgbToLinear);
+  const to = color2.map(srgbToLinear);
   const mixed = [
     from[0] + (to[0] - from[0]) * pos,
     from[1] + (to[1] - from[1]) * pos,
@@ -97,7 +103,7 @@ function perceptualMix(color1, color2, pos) {
     mixed[2] *= factor;
   }
 
-  return mixed.map(conv.linearToSrgb);
+  return mixed.map(linearToSrgb);
 }
 
 function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
@@ -110,10 +116,10 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
   let amount = ditherAmount / 100;
 
   if (ditherMode === "errorDiffusion") {
-    const labValues = values.map(conv.rgbToLab);
+    const labValues = values.map(rgbToLab);
     for (let i = 0; i < labValues.length; i++) {
       const col = labValues[i];
-      const quantised = conv.rgbToLab(conv.quantize(conv.labToRgb(col), depth));
+      const quantised = rgbToLab(quantize(labToRgb(col), depth));
       const errL = col[0] - quantised[0];
       const errA = col[1] - quantised[1];
       const errB = col[2] - quantised[2];
@@ -123,7 +129,7 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
         labValues[i + 1][2] += errB * amount;
       }
     }
-    return labValues.map(conv.labToRgb);
+    return labValues.map(labToRgb);
   }
 
   const depthInt = Array.isArray(depth) ? depth[0] : depth;
@@ -132,7 +138,7 @@ function dither(values, { ditherMode, ditherAmount, shuffleCount, target }) {
   amount *= 4 / depthInt;
 
   const sameOutput = (a, b) =>
-    conv.sameColors(conv.quantize(a, depth), conv.quantize(b, depth));
+    sameColors(quantize(a, depth), quantize(b, depth));
 
   for (let i = 0; i < values.length; i++) {
     switch (ditherMode) {
@@ -245,12 +251,12 @@ export function interlaceGradient(gradient, depth) {
   const inc = divisor / 2;
 
   for (let col of gradient) {
-    let odd = conv.quantize(col, depth).map((c) => c - inc);
-    odd = conv.quantize(odd, depth - 1);
+    let odd = quantize(col, depth).map((c) => c - inc);
+    odd = quantize(odd, depth - 1);
     out[0].push(odd);
 
-    let even = conv.quantize(col, depth).map((c) => c + inc);
-    even = conv.quantize(even, depth - 1);
+    let even = quantize(col, depth).map((c) => c + inc);
+    even = quantize(even, depth - 1);
     out[1].push(even);
   }
 

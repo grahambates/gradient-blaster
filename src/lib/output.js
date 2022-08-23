@@ -1,4 +1,13 @@
-import * as conv from "../lib/colorConvert";
+import {
+  encodeHex3,
+  encodeHexSte,
+  encodeHexPairAga,
+  encodeHexFalcon,
+  encodeHexFalconTrue,
+  decodeHex3,
+} from "./hex";
+import { reduceBits } from "./bitDepth";
+import { sameColors } from "./utils";
 
 export const formats = {
   copperList: { label: "Copper list" },
@@ -9,6 +18,64 @@ export const formats = {
   tableBin: { label: "Table: binary" },
   imagePng: { label: "PNG Image" },
 };
+
+export function buildCopperList(
+  gradient,
+  {
+    startLine = 0x2b,
+    varName,
+    colorIndex = 0,
+    waitStart = true,
+    endList = true,
+    target,
+  }
+) {
+  const colorReg = "$" + (0x180 + colorIndex).toString(16);
+  let output = [];
+  if (varName) {
+    output.push(varName + ":");
+  }
+
+  let lastCol;
+  let line = startLine;
+  for (const col of gradient) {
+    if (target.id === "amigaOcs" || target.id === "amigaOcsLace") {
+      // OCS/ ECS
+      const hex = encodeHex3(reduceBits(col, 4));
+      if (lastCol !== hex) {
+        const l = (line & 0xff).toString(16);
+        if (line > startLine || waitStart) {
+          output.push(`\tdc.w $${l}07,$fffe`);
+        }
+        output.push(`\tdc.w ${colorReg},$${hex}`);
+      }
+      lastCol = hex;
+    } else {
+      // AGA
+      if (!sameColors(lastCol, col)) {
+        const l = (line & 0xff).toString(16);
+        if (line > startLine || waitStart) {
+          output.push(`\tdc.w $${l}07,$fffe`);
+        }
+        const [hex1, hex2] = encodeHexPairAga(col);
+        output.push(`\tdc.w ${colorReg},$${hex1}`);
+        output.push(`\tdc.w $106,$200`);
+        output.push(`\tdc.w ${colorReg},$${hex2}`);
+        output.push(`\tdc.w $106,$000`);
+      }
+      lastCol = col;
+    }
+    // PAL fix
+    if (line === 0xff) {
+      output.push(`\tdc.w $ffdf,$fffe ; PAL fix`);
+    }
+    line++;
+  }
+  if (endList) {
+    output.push(`\tdc.w $ffff,$fffe ; End copper list`);
+  }
+  return output.join("\n");
+}
 
 export const formatTableAsm = (values, { rowSize, varName, target }) => {
   let output = varName ? varName + ":\n" : "";
@@ -24,23 +91,23 @@ function tableHexItems(values, target) {
   const items = [];
   for (let col of values) {
     if (target.id === "atariSte") {
-      const color = conv.reduceBits(col, target.depth);
-      items.push(conv.encodeHexSte(color));
+      const color = reduceBits(col, target.depth);
+      items.push(encodeHexSte(color));
     } else if (target.id === "amigaAga") {
-      const hex = conv.encodeHexPairAga(col);
+      const hex = encodeHexPairAga(col);
       items.push(hex[0], hex[1]);
     } else if (target.id === "atariFalcon") {
-      const color = conv.reduceBits(col, target.depth);
-      items.push(conv.encodeHexFalcon(color));
+      const color = reduceBits(col, target.depth);
+      items.push(encodeHexFalcon(color));
     } else if (target.id === "atariFalconTrue") {
-      const color = conv.reduceBits(col, target.depth);
-      items.push(conv.encodeHexFalconTrue(color));
+      const color = reduceBits(col, target.depth);
+      items.push(encodeHexFalconTrue(color));
     } else if (target.id === "amigaOcsLace") {
-      const color = conv.reduceBits(col, 4);
-      items.push(conv.encodeHex3(color));
+      const color = reduceBits(col, 4);
+      items.push(encodeHex3(color));
     } else {
-      const color = conv.reduceBits(col, target.depth);
-      items.push(conv.encodeHex3(color));
+      const color = reduceBits(col, target.depth);
+      items.push(encodeHex3(color));
     }
   }
   return items;
@@ -81,7 +148,7 @@ export const gradientToBytes = (gradient, target) => {
   if (target.id === "amigaAga") {
     bytes = new Uint8Array(gradient.length * 4);
     for (const rgb of gradient) {
-      const rgbPair = conv.encodeHexPairAga(rgb).map(conv.decodeHex3);
+      const rgbPair = encodeHexPairAga(rgb).map(decodeHex3);
       for (const [r, g, b] of rgbPair) {
         bytes[i++] = r;
         bytes[i++] = (g << 4) + b;
@@ -90,7 +157,7 @@ export const gradientToBytes = (gradient, target) => {
   } else if (target.id === "atariSte") {
     bytes = new Uint8Array(gradient.length * 2);
     for (const [r, g, b] of gradient.map((c) =>
-      conv.decodeHex3(conv.encodeHexSte(conv.reduceBits(c, target.depth)))
+      decodeHex3(encodeHexSte(reduceBits(c, target.depth)))
     )) {
       bytes[i++] = r;
       bytes[i++] = (g << 4) + b;
@@ -98,7 +165,7 @@ export const gradientToBytes = (gradient, target) => {
   } else if (target.id === "atariFalcon") {
     bytes = new Uint8Array(gradient.length * 4);
     for (const [r, g, b] of gradient.map((c) =>
-      conv.reduceBits(c, target.depth).map((c) => c << 2)
+      reduceBits(c, target.depth).map((c) => c << 2)
     )) {
       bytes[i++] = r;
       bytes[i++] = g;
@@ -108,24 +175,20 @@ export const gradientToBytes = (gradient, target) => {
   } else if (target.id === "atariFalconTrue") {
     bytes = new Uint8Array(gradient.length * 2);
     for (const [a, b, c, d] of gradient.map((c) =>
-      conv.decodeHex3(
-        conv.encodeHexFalconTrue(conv.reduceBits(c, target.depth))
-      )
+      decodeHex3(encodeHexFalconTrue(reduceBits(c, target.depth)))
     )) {
       bytes[i++] = (a << 4) + b;
       bytes[i++] = (c << 4) + d;
     }
   } else if (target.id === "amigaOcsLace") {
     bytes = new Uint8Array(gradient.length * 2);
-    for (const [r, g, b] of gradient.map((c) => conv.reduceBits(c, 4))) {
+    for (const [r, g, b] of gradient.map((c) => reduceBits(c, 4))) {
       bytes[i++] = r;
       bytes[i++] = (g << 4) + b;
     }
   } else {
     bytes = new Uint8Array(gradient.length * 2);
-    for (const [r, g, b] of gradient.map((c) =>
-      conv.reduceBits(c, target.depth)
-    )) {
+    for (const [r, g, b] of gradient.map((c) => reduceBits(c, target.depth))) {
       bytes[i++] = r;
       bytes[i++] = (g << 4) + b;
     }
@@ -137,54 +200,3 @@ export const base64Encode = (bytes) =>
   window.btoa(
     bytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
   );
-
-export function buildCopperList(
-  gradient,
-  { startLine = 0x2b, varName, colorIndex, waitStart, endList, target }
-) {
-  const colorReg = "$" + (0x180 + colorIndex).toString(16);
-  let output = [];
-  if (varName) {
-    output.push(varName + ":");
-  }
-
-  let lastCol;
-  let line = startLine;
-  for (const col of gradient) {
-    if (target.id === "amigaOcs" || target.id === "amigaOcsLace") {
-      // OCS/ ECS
-      const hex = conv.encodeHex3(conv.reduceBits(col, 4));
-      if (lastCol !== hex) {
-        const l = (line & 0xff).toString(16);
-        if (line > startLine || waitStart) {
-          output.push(`\tdc.w $${l}07,$fffe`);
-        }
-        output.push(`\tdc.w ${colorReg},$${hex}`);
-      }
-      lastCol = hex;
-    } else {
-      // AGA
-      if (!conv.sameColors(lastCol, col)) {
-        const l = (line & 0xff).toString(16);
-        if (line > startLine || waitStart) {
-          output.push(`\tdc.w $${l}07,$fffe`);
-        }
-        const [hex1, hex2] = conv.encodeHexPairAga(col);
-        output.push(`\tdc.w ${colorReg},$${hex1}`);
-        output.push(`\tdc.w $106,$200`);
-        output.push(`\tdc.w ${colorReg},$${hex2}`);
-        output.push(`\tdc.w $106,$000`);
-      }
-      lastCol = col;
-    }
-    // PAL fix
-    if (line === 0xff) {
-      output.push(`\tdc.w $ffdf,$fffe ; PAL fix`);
-    }
-    line++;
-  }
-  if (endList) {
-    output.push(`\tdc.w $ffff,$fffe ; End copper list`);
-  }
-  return output.join("\n");
-}
