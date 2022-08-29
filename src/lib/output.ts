@@ -54,7 +54,7 @@ export function buildCopperList(
     target,
   }: CopperListOptions
 ): string {
-  const colorReg = "$" + (0x180 + colorIndex).toString(16);
+  const colorReg = "$" + (0x180 + colorIndex * 2).toString(16);
   let output = [];
   if (varName) {
     output.push(varName + ":");

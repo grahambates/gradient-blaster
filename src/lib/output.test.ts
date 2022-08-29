@@ -74,6 +74,15 @@ describe("output", () => {
       expect(result).toContain("dc.w $ffdf,$fffe ; PAL fix");
       expect(result).toContain("dc.w $ffff,$fffe ; End copper list");
     });
+
+    it("allows setting color index", () => {
+      let result = output.buildCopperList(values, {
+        varName: "Gradient",
+        target: targets.amigaOcs,
+        colorIndex: 1,
+      });
+      expect(result).toContain(`dc.w $182,$000`);
+    });
   });
 
   describe("formatTableAsm()", () => {
