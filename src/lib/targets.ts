@@ -16,6 +16,7 @@ export type TargetKey =
   | "atariSt"
   | "atariSte"
   | "atariFalcon"
+  | "atariFalcon24"
   | "atariFalconTruecolor";
 
 const targets: Record<TargetKey, Target> = {
@@ -75,6 +76,12 @@ const targets: Record<TargetKey, Target> = {
     id: "atariFalcon",
     label: "Atari Falcon",
     depth: 6,
+    outputs: ["tableAsm", "tableC", "tableStos", "tableBin", "imagePng"],
+  },
+  atariFalcon24: {
+    id: "atariFalcon24",
+    label: "Atari Falcon 24bit",
+    depth: 8,
     outputs: ["tableAsm", "tableC", "tableStos", "tableBin", "imagePng"],
   },
   atariFalconTruecolor: {

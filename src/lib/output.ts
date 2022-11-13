@@ -5,6 +5,7 @@ import {
   encodeHexFalcon,
   encodeHexFalconTrue,
   decodeHex3,
+  encodeHexFalcon24,
 } from "./hex";
 import { reduceBits } from "./bitDepth";
 import { sameColors } from "./utils";
@@ -132,6 +133,8 @@ function tableHexItems(values: Color[], target: Target) {
     } else if (target.id === "atariFalcon") {
       const color = reduceBits(col, target.depth);
       items.push(encodeHexFalcon(color));
+    } else if (target.id === "atariFalcon24") {
+      items.push(encodeHexFalcon24(col));
     } else if (target.id === "atariFalconTrue") {
       const color = reduceBits(col, target.depth);
       items.push(encodeHexFalconTrue(color));
@@ -203,6 +206,14 @@ export const gradientToBytes = (gradient: Color[], target: Target) => {
     for (const [r, g, b] of gradient.map((c) =>
       reduceBits(c, target.depth).map((c) => c << 2)
     )) {
+      bytes[i++] = r;
+      bytes[i++] = g;
+      bytes[i++] = 0;
+      bytes[i++] = b;
+    }
+  } else if (target.id === "atariFalcon24") {
+    bytes = new Uint8Array(gradient.length * 4);
+    for (const [r, g, b] of gradient) {
       bytes[i++] = r;
       bytes[i++] = g;
       bytes[i++] = 0;

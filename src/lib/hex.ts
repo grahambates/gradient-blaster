@@ -29,6 +29,13 @@ export function encodeHexFalcon(rgb: Color): string {
   return r + g + "00" + b;
 }
 
+export function encodeHexFalcon24(rgb: Color): string {
+  const [r, g, b] = normalizeRgb(rgb).map((v) =>
+    v.toString(16).padStart(2, "0")
+  );
+  return r + g + "00" + b;
+}
+
 export function encodeHexFalconTrue([r, g, b]: Color): string {
   const word = (r << 11) | (g << 5) | b;
   return word.toString(16).padStart(4, "0");
