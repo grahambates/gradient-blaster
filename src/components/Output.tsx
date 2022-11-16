@@ -409,9 +409,11 @@ interface ImagePngProps {
 }
 
 function ImagePng({ gradient, target }: ImagePngProps) {
-  const [width, setWidth] = useState(gradient.length);
+  const [repeat, setRepeat] = useState(gradient.length);
+  const [orientation, setOrientation] = useState("v");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [data, setData] = useState("");
+  const vertical = orientation === "v";
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -421,10 +423,14 @@ function ImagePng({ gradient, target }: ImagePngProps) {
     for (let i = 0; i < gradient.length; i++) {
       let color = quantize(gradient[i], target.depth);
       ctx.fillStyle = rgbCssProp(color);
-      ctx.fillRect(0, i, width, i);
+      if (vertical) {
+        ctx.fillRect(0, i, repeat, i);
+      } else {
+        ctx.fillRect(i, 0, i, repeat);
+      }
     }
     setData(canvasRef.current.toDataURL());
-  }, [gradient, width, target]);
+  }, [gradient, vertical, repeat, target]);
 
   return (
     <>
@@ -432,23 +438,34 @@ function ImagePng({ gradient, target }: ImagePngProps) {
         <canvas
           style={{ display: "none" }}
           ref={canvasRef}
-          width={width}
-          height={gradient.length}
+          width={vertical ? repeat : gradient.length}
+          height={vertical ? gradient.length : repeat}
         />
-        <Button iconLeft={<FaDownload />} href={data} download="gradient.png">
-          Download
-        </Button>
         <span>
-          <label htmlFor="Output-width">Width: </label>
+          <label htmlFor="Output-orientation">Dir: </label>
+          <select
+            id="Output-orientation"
+            value={orientation}
+            onChange={(e) => setOrientation(e.target.value)}
+          >
+            <option value="v">Vertical</option>
+            <option value="h">Horizontal</option>
+          </select>
+        </span>
+        <span>
+          <label htmlFor="Output-repeat">{orientation === "v" ? "Width: " : "Height: " }</label>
           <input
-            id="Output-width"
+            id="Output-repeat"
             type="number"
             min="1"
             max="3000"
-            value={width}
-            onChange={(e) => setWidth(parseInt(e.target.value))}
+            value={repeat}
+            onChange={(e) => setRepeat(parseInt(e.target.value))}
           />
         </span>
+        <Button iconLeft={<FaDownload />} href={data} download="gradient.png">
+          Download
+        </Button>
       </div>
     </>
   );
