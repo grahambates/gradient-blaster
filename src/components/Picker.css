@@ -17,6 +17,11 @@
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
+.Picker__swatch.is-selected {
+  outline: 1px solid black;
+  border-color: white;
+}
+
 /* HueStrip */
 
 .HueStrip {

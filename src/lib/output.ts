@@ -19,6 +19,7 @@ export type FormatKey =
   | "tableAmos"
   | "tableStos"
   | "tableBin"
+  | "hexList"
   | "imagePng";
 
 export interface Format {
@@ -32,6 +33,7 @@ export const formats: Record<FormatKey, Format> = {
   tableAmos: { label: "Table: AMOS" },
   tableStos: { label: "Table: STOS" },
   tableBin: { label: "Table: binary" },
+  hexList: { label: "Hex list" },
   imagePng: { label: "PNG Image" },
 };
 

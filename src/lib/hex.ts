@@ -59,7 +59,8 @@ export function hexToRgb(hex: string, depth: Bits = 4): Color {
 }
 
 export function decodeHex3(hex: string): Color {
-  return hex.split("").map((v) => parseInt(v, 16)) as Color;
+  const chars = hex.split("");
+  return chars.map((v) => parseInt(v, 16)) as Color;
 }
 
 export function decodeHex6(hex: string): Color {
