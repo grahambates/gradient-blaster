@@ -24,7 +24,9 @@ export type TargetKey =
   | "amstradCpc"
   | "c64"
   | "spectrum"
-  | "nes";
+  | "nes"
+  | "msx"
+  | "cga";
 
 const targets: Record<TargetKey, Target> = {
   amigaOcs: {
@@ -286,6 +288,56 @@ const targets: Record<TargetKey, Target> = {
       "787878",
     ].map(decodeHex6),
     paletteRowSize: 11,
+  },
+  msx: {
+    id: "msx",
+    label: "MSX",
+    depth: 4,
+    outputs: ["hexList", "imagePng"],
+    palette: [
+      "000000",
+      "010101",
+      "3eb849",
+      "74d07d",
+      "5955e0",
+      "8076f1",
+      "b95e51",
+      "65dbef",
+      "db6559",
+      "ff897d",
+      "ccc35e",
+      "ded087",
+      "3aa241",
+      "b766b5",
+      "cccccc",
+      "ffffff",
+    ].map(decodeHex6),
+    paletteRowSize: 8,
+  },
+  cga: {
+    id: "cga",
+    label: "CGA",
+    depth: 4,
+    outputs: ["hexList", "imagePng"],
+    palette: [
+      "000000",
+      "0000aa",
+      "00aa00",
+      "00aaaa",
+      "aa0000",
+      "aa00aa",
+      "aa5500",
+      "aaaaaa",
+      "555555",
+      "5555ff",
+      "55ff55",
+      "55ffff",
+      "ff5555",
+      "ff55ff",
+      "ffff55",
+      "ffffff",
+    ].map(decodeHex6),
+    paletteRowSize: 8,
   },
 };
 
