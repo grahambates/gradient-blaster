@@ -176,7 +176,7 @@ export const formatTableC = (
   let output = `unsigned ${size} ${varName}[${items.length}] = {\n`;
   output += groupRows(items, rowSize)
     .map((row) => "\t" + row.map((v) => "0x" + v).join(","))
-    .join("\n");
+    .join(",\n");
   return output + "\n};";
 };
 
