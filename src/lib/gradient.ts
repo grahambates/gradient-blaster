@@ -1,4 +1,4 @@
-import quant from "./quantize";
+import * as iq from 'image-q';
 import { Bits, Color, Options, Point, RGB } from "../types";
 import { quantize } from "./bitDepth";
 import {
@@ -10,6 +10,7 @@ import {
   rgbToOklab,
   srgbToLinear,
 } from "./colorSpace";
+import { encodeHex6 } from './hex';
 import targets from "./targets";
 import { normalizeRgb, sameColors } from "./utils";
 
@@ -70,18 +71,29 @@ export function buildGradient(points: Point[], options: Options): RGB[] {
     }
   }
 
+  let pal;
+
+  if (options.paletteSize) {
+    const points = values.map((v) => parseInt(encodeHex6([v[2], v[1], v[0]]), 16));
+    const pc = iq.utils.PointContainer.fromUint32Array(Uint32Array.from(points), 1, points.length);
+    try {
+      pal = iq.buildPaletteSync([pc], { colors: options.paletteSize, paletteQuantization: 'rgbquant' });
+    } catch (err) {
+      console.log(points)
+    }
+  }
+
   if (ditherMode !== "off") {
     values = dither(values, options);
   }
 
   values = values.map(normalizeRgb);
 
-  if (options.paletteSize) {
-    const cmap = quant(values, options.paletteSize);
-    console.log(cmap);
-    values = values.map(function(p) {
-      return cmap.map(p);
-    });
+  if (pal) {
+    const points = values.map((v) => parseInt(encodeHex6([v[2], v[1], v[0]]), 16));
+    const pc = iq.utils.PointContainer.fromUint32Array(Uint32Array.from(points), 1, points.length);
+    const outPointContainer = iq.applyPaletteSync(pc, pal, {imageQuantization: 'nearest'});
+    return outPointContainer.getPointArray().map((p) => [p.r, p.g, p.b] as RGB);
   }
 
   return values
