@@ -11,9 +11,9 @@ export type UrlArgs = {
 };
 
 export const encodeUrlQuery = ({ points, options }: UrlArgs): string => {
-  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, target } =
+  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, target, paletteSize } =
     options;
-  const opts: Options = { steps, blendMode, ditherMode, target };
+  const opts: Options = { steps, blendMode, ditherMode, target, paletteSize };
   if (!["off", "shuffle"].includes(ditherMode)) {
     opts.ditherAmount = ditherAmount;
   }
@@ -34,6 +34,7 @@ export const decodeUrlQuery = (query: string): Partial<UrlArgs> => {
     ditherAmount,
     shuffleCount,
     target,
+    paletteSize
   } = qs.parse(query.substring(1)) as Record<string, string>;
   const options = {
     steps: intVal(steps),
@@ -42,6 +43,7 @@ export const decodeUrlQuery = (query: string): Partial<UrlArgs> => {
     ditherAmount: intVal(ditherAmount),
     shuffleCount: intVal(shuffleCount),
     target,
+    paletteSize: intVal(paletteSize)
   } as Options;
   // Remove undefined
   Object.keys(options).forEach((key) => {
