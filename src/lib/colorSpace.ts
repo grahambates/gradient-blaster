@@ -1,8 +1,8 @@
-import { Color } from "../types";
+import { HSV, LAB, LRGB, OKLAB, RGB } from "../types";
 
 // HSV:
 
-export function rgbToHsv([r, g, b]: Color): Color {
+export function rgbToHsv([r, g, b]: RGB): HSV {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -36,7 +36,7 @@ export function rgbToHsv([r, g, b]: Color): Color {
   return [h, s, v];
 }
 
-export function hsvToRgb([h, s, v]: Color): Color {
+export function hsvToRgb([h, s, v]: HSV): RGB {
   let r, g, b;
 
   const i = Math.floor(h * 6);
@@ -84,7 +84,7 @@ export function hsvToRgb([h, s, v]: Color): Color {
 
 // LAB:
 
-export function rgbToLab(rgb: Color): Color {
+export function rgbToLab(rgb: RGB): LAB {
   let r = rgb[0] / 255,
     g = rgb[1] / 255,
     b = rgb[2] / 255,
@@ -107,7 +107,7 @@ export function rgbToLab(rgb: Color): Color {
   return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
 }
 
-export function labToRgb(lab: Color): Color {
+export function labToRgb(lab: LAB): RGB {
   let y = (lab[0] + 16) / 116,
     x = lab[1] / 500 + y,
     z = y - lab[2] / 200,
@@ -136,7 +136,7 @@ export function labToRgb(lab: Color): Color {
 
 // OKLAB:
 
-export function rgbToOklab(col: Color): Color {
+export function rgbToOklab(col: RGB): OKLAB {
   const [r, g, b] = rgbToLrgb(col);
 
   let L = Math.cbrt(
@@ -156,7 +156,7 @@ export function rgbToOklab(col: Color): Color {
   ];
 }
 
-export function oklabToRgb([l, a, b]: Color): Color {
+export function oklabToRgb([l, a, b]: OKLAB): RGB {
   let L = Math.pow(
     l * 0.9999999984505198 + 0.3963377921737679 * a + 0.2158037580607588 * b,
     3
@@ -179,24 +179,24 @@ export function oklabToRgb([l, a, b]: Color): Color {
 
 // Linear RGB
 
-export const rgbToLrgb = (col: Color): Color => {
+export const rgbToLrgb = (col: RGB): LRGB => {
   return col.map((c) => {
     const abs = Math.abs(c);
     if (abs < 0.04045) {
       return c / 12.92;
     }
     return (Math.sign(c) || 1) * Math.pow((abs + 0.055) / 1.055, 2.4);
-  }) as Color;
+  }) as LRGB;
 };
 
-export const lrgbToRgb = (col: Color): Color => {
+export const lrgbToRgb = (col: LRGB): RGB => {
   return col.map((c) => {
     const abs = Math.abs(c);
     if (abs > 0.0031308) {
       return (Math.sign(c) || 1) * (1.055 * Math.pow(abs, 1 / 2.4) - 0.055);
     }
     return c * 12.92;
-  }) as Color;
+  }) as RGB;
 };
 
 // Linear sRGB components
@@ -213,6 +213,6 @@ export function srgbToLinear(x: number): number {
 
 // Luminance:
 
-export function luminance([r, g, b]: Color): number {
+export function luminance([r, g, b]: RGB): number {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }

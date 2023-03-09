@@ -4,7 +4,7 @@ import { decodeHex3 } from "../lib/hex";
 import { quantize, restoreBits } from "../lib/bitDepth";
 import { clamp, fToPercent, rgbCssProp } from "../lib/utils";
 import { hsvToRgb, luminance, rgbToHsv } from "../lib/colorSpace";
-import { Bits, Color } from "../types";
+import { Bits, HSV } from "../types";
 
 // Standard palette swatches, divided into rows
 const swatches = [
@@ -53,9 +53,9 @@ const swatches = [
 ].map((row) => row.map(decodeHex3).map((c) => restoreBits(c, 4)));
 
 export interface PickerProps {
-  hsv: Color;
+  hsv: HSV;
   depth: Bits;
-  onChange: (c: Color) => void;
+  onChange: (c: HSV) => void;
 }
 
 const Picker = React.memo(({ hsv, depth, onChange }: PickerProps) => {
@@ -169,8 +169,8 @@ const PickerSquare = ({ hsv, depth, onChange }: PickerProps) => {
 };
 
 interface HueStripProps {
-  hsv: Color;
-  onChange: (c: Color) => void;
+  hsv: HSV;
+  onChange: (c: HSV) => void;
 }
 
 const HueStrip = ({ hsv, onChange }: HueStripProps) => {

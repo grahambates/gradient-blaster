@@ -1,10 +1,10 @@
-import { Color } from "../types";
+import { Color, RGB } from "../types";
 
-export function normalizeRgb(rgb: Color): Color {
-  return rgb.map((c) => Math.round(clamp(c, 0, 255))) as Color;
+export function normalizeRgb(rgb: RGB): RGB {
+  return rgb.map((c) => Math.round(clamp(c, 0, 255))) as RGB;
 }
 
-export function rgbCssProp([r, g, b]: Color): string {
+export function rgbCssProp([r, g, b]: RGB): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 

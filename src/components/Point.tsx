@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { quantize } from "../lib/bitDepth";
 import { hsvToRgb, luminance } from "../lib/colorSpace";
 import { rgbCssProp } from "../lib/utils";
-import { Bits, Color } from "../types";
+import { Bits, HSV } from "../types";
 import "./Point.css";
 
 const REMOVE_THRESHOLD = 30;
 
 export interface PointProps {
   y: number;
-  color: Color;
+  color: HSV;
   selected?: boolean;
   onMove: (y: number) => void;
   onClone: () => void;

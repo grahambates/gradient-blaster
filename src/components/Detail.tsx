@@ -19,7 +19,7 @@ import Button from "./Button";
 import { decodeHex3, decodeHex6, encodeHex3, encodeHex6 } from "../lib/hex";
 import { quantize, reduceBits, restoreBits } from "../lib/bitDepth";
 import { hsvToRgb, luminance, rgbToHsv } from "../lib/colorSpace";
-import { Color } from "../types";
+import { HSV } from "../types";
 
 function Detail() {
   const dispatch = useDispatch();
@@ -57,7 +57,7 @@ function Detail() {
   }
 
   const handleChangeColor = useCallback(
-    (color: Color) => dispatch(setColor(color)),
+    (color: HSV) => dispatch(setColor(color)),
     [dispatch]
   );
 
