@@ -10,13 +10,14 @@ import {
   setShuffleCount,
   setTarget,
   selectOptions,
+  setPaletteSize,
 } from "../store/options";
 import targets, { TargetKey } from "../lib/targets";
 
 function Options() {
   const dispatch = useDispatch();
   const options = useSelector(selectOptions);
-  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, target } =
+  const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, target, paletteSize } =
     options;
 
   return (
@@ -127,6 +128,31 @@ function Options() {
           />
         </div>
       )}
+
+      <div>
+        <label htmlFor="paletteSize">
+          Palette size:
+          <input type="checkbox" checked={!!paletteSize} onChange={(e) => {
+            if (e.target.checked) {
+              dispatch(setPaletteSize(16))
+            } else {
+              dispatch(setPaletteSize(undefined))
+            }
+          }} />
+        </label>
+        <input
+            id="paletteSize"
+            className="Options__paletteSize"
+            type="number"
+            disabled={!paletteSize}
+            min={2}
+            max={256}
+            value={paletteSize}
+            onChange={(e) =>
+              dispatch(setPaletteSize(parseInt(e.target.value)))
+            }
+          />
+      </div>
     </div>
   );
 }

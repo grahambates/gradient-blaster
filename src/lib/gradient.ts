@@ -1,3 +1,4 @@
+import quant from "./quantize";
 import { Bits, Color, Options, Point, RGB } from "../types";
 import { quantize } from "./bitDepth";
 import {
@@ -73,7 +74,17 @@ export function buildGradient(points: Point[], options: Options): RGB[] {
     values = dither(values, options);
   }
 
-  return values.map(normalizeRgb);
+  values = values.map(normalizeRgb);
+
+  if (options.paletteSize) {
+    const cmap = quant(values, options.paletteSize);
+    console.log(cmap);
+    values = values.map(function(p) {
+      return cmap.map(p);
+    });
+  }
+
+  return values
 }
 
 // https://stackoverflow.com/questions/22607043/color-gradient-algorithm
@@ -109,8 +120,8 @@ function perceptualMix(color1: RGB, color2: RGB, pos: number): RGB {
 
 function dither(
   values: RGB[],
-  { ditherMode, ditherAmount = 0, shuffleCount = 1, target }: Options
-) {
+  { ditherMode, ditherAmount = 0, shuffleCount = 1, target, paletteSize }: Options
+): RGB[] {
   if (ditherMode === "off") {
     return values;
   }

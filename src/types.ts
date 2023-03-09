@@ -29,5 +29,6 @@ export interface Options {
   ditherMode: string;
   ditherAmount?: number;
   shuffleCount?: number;
+  paletteSize?: number;
   target: TargetKey;
 }

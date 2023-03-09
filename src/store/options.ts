@@ -40,6 +40,9 @@ export const configSlice = createSlice({
     setShuffleCount: (state, action) => {
       state.shuffleCount = action.payload;
     },
+    setPaletteSize: (state, action) => {
+      state.paletteSize = action.payload;
+    },
     setTarget: (state, action) => {
       state.target = action.payload;
     },
@@ -57,6 +60,7 @@ export const {
   setDitherMode,
   setDitherAmount,
   setShuffleCount,
+  setPaletteSize,
   setTarget,
 } = configSlice.actions;
 

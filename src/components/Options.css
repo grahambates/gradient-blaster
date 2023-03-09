@@ -13,6 +13,9 @@
 .Options input[type="number"] {
   width: 4rem;
 }
+.Options input:disabled {
+  opacity: .5;
+}
 .Options__ditherAmount {
   white-space: nowrap;
 }
