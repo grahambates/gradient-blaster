@@ -79,12 +79,13 @@ export function buildGradient(points: Point[], options: Options): RGB[] {
     try {
       pal = iq.buildPaletteSync([pc], { colors: options.paletteSize, paletteQuantization: 'rgbquant' });
     } catch (err) {
-      console.log(points)
+      console.error(err)
+      console.log({ points, values })
     }
   }
 
   if (ditherMode !== "off") {
-    values = dither(values, options);
+    values = dither(values, options, pal);
   }
 
   values = values.map(normalizeRgb);
@@ -132,7 +133,8 @@ function perceptualMix(color1: RGB, color2: RGB, pos: number): RGB {
 
 function dither(
   values: RGB[],
-  { ditherMode, ditherAmount = 0, shuffleCount = 1, target, paletteSize }: Options
+  { ditherMode, ditherAmount = 0, shuffleCount = 1, target, paletteSize }: Options,
+  pal?: iq.utils.Palette
 ): RGB[] {
   if (ditherMode === "off") {
     return values;
@@ -142,11 +144,20 @@ function dither(
 
   let amount = ditherAmount / 100;
 
+
+  const quan = (a: RGB, depth: Bits) => {
+    if (pal) {
+      const nearest = pal.getNearestColor(new iq.distance.Euclidean(), iq.utils.Point.createByUint32(parseInt(encodeHex6([a[2], a[1], a[0]]), 16)));
+      a = [nearest.r, nearest.g, nearest.b];
+    }
+    return quantize(a, depth);
+  }
+
   if (ditherMode === "errorDiffusion") {
     const labValues = values.map(rgbToLab);
     for (let i = 0; i < labValues.length; i++) {
       const col = labValues[i];
-      const quantised = rgbToLab(quantize(labToRgb(col), depth));
+      const quantised = rgbToLab(quan(labToRgb(col), depth));
       const errL = col[0] - quantised[0];
       const errA = col[1] - quantised[1];
       const errB = col[2] - quantised[2];
@@ -165,7 +176,7 @@ function dither(
   amount *= 4 / depthInt;
 
   const sameOutput = (a: RGB, b: RGB) =>
-    sameColors(quantize(a, depth), quantize(b, depth));
+    sameColors(quan(a, depth), quan(b, depth));
 
   for (let i = 0; i < values.length; i++) {
     switch (ditherMode) {
