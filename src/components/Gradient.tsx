@@ -17,7 +17,7 @@ import { interlaceGradient } from "../lib/gradient";
 import { rgbToHsv } from "../lib/colorSpace";
 import { quantize } from "../lib/bitDepth";
 import { clamp, rgbCssProp } from "../lib/utils";
-import { Bits, Color } from "../types";
+import { Bits, RGB } from "../types";
 
 function Gradient() {
   const dispatch = useDispatch();
@@ -141,7 +141,7 @@ function Gradient() {
 }
 
 interface CanvasProps {
-  gradient: Color[];
+  gradient: RGB[];
   scale: number;
   depth: Bits;
 }

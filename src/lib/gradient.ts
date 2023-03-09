@@ -1,4 +1,4 @@
-import { Bits, Color, Options, Point } from "../types";
+import { Bits, Color, Options, Point, RGB } from "../types";
 import { quantize } from "./bitDepth";
 import {
   hsvToRgb,
@@ -14,7 +14,7 @@ import { normalizeRgb, sameColors } from "./utils";
 
 const GOLDEN_RATIO = 1.61803399;
 
-export function buildGradient(points: Point[], options: Options): Color[] {
+export function buildGradient(points: Point[], options: Options): RGB[] {
   const { steps, blendMode, ditherMode, target } = options;
   const depth = targets[target].depth;
   const mappedPoints = [...points].map((p) => {
@@ -24,7 +24,7 @@ export function buildGradient(points: Point[], options: Options): Color[] {
     return { y, color };
   });
 
-  let values: Color[] = [];
+  let values: RGB[] = [];
   let pointIndex = 0;
 
   for (let i = 0; i < steps; i++) {
@@ -50,7 +50,7 @@ export function buildGradient(points: Point[], options: Options): Color[] {
       const pos = (i - current.y) / (next.y - current.y);
       const from = current.color;
       const to = next.color;
-      let mixed: Color;
+      let mixed: RGB;
       switch (blendMode) {
         case "lab":
           mixed = labToRgb(lerpColor(rgbToLab(from), rgbToLab(to), pos));
@@ -77,7 +77,7 @@ export function buildGradient(points: Point[], options: Options): Color[] {
 }
 
 // https://stackoverflow.com/questions/22607043/color-gradient-algorithm
-function perceptualMix(color1: Color, color2: Color, pos: number): Color {
+function perceptualMix(color1: RGB, color2: RGB, pos: number): RGB {
   const from = color1.map(srgbToLinear);
   const to = color2.map(srgbToLinear);
   const mixed = [
@@ -104,11 +104,11 @@ function perceptualMix(color1: Color, color2: Color, pos: number): Color {
     mixed[2] *= factor;
   }
 
-  return mixed.map(linearToSrgb) as Color;
+  return mixed.map(linearToSrgb) as RGB;
 }
 
 function dither(
-  values: Color[],
+  values: RGB[],
   { ditherMode, ditherAmount = 0, shuffleCount = 1, target }: Options
 ) {
   if (ditherMode === "off") {
@@ -141,7 +141,7 @@ function dither(
   // Scale noise functions to color depth
   amount *= 4 / depthInt;
 
-  const sameOutput = (a: Color, b: Color) =>
+  const sameOutput = (a: RGB, b: RGB) =>
     sameColors(quantize(a, depth), quantize(b, depth));
 
   for (let i = 0; i < values.length; i++) {
@@ -231,12 +231,12 @@ function dither(
   return values;
 }
 
-function lerpColor(from: Color, to: Color, pos: number): Color {
+function lerpColor<T extends Color>(from: T, to: T, pos: number): T {
   return [
     Math.round(from[0] + (to[0] - from[0]) * pos),
     Math.round(from[1] + (to[1] - from[1]) * pos),
     Math.round(from[2] + (to[2] - from[2]) * pos),
-  ];
+  ] as T;
 }
 
 const blueNoise = [
@@ -246,10 +246,10 @@ const blueNoise = [
   55, 3, 30, 43,
 ].map((n) => n / 64 - 0.5);
 
-type GradientPair = [Color[], Color[]];
+type GradientPair = [RGB[], RGB[]];
 
 export function interlaceGradient(
-  gradient: Color[],
+  gradient: RGB[],
   depth: Bits
 ): GradientPair {
   const out: GradientPair = [[], []];
@@ -260,11 +260,11 @@ export function interlaceGradient(
   const inc = divisor / 2;
 
   for (let col of gradient) {
-    let odd = quantize(col, depthInt).map((c) => c - inc) as Color;
+    let odd = quantize(col, depthInt).map((c) => c - inc) as RGB;
     odd = quantize(odd, depthInt - 1);
     out[0].push(odd);
 
-    let even = quantize(col, depthInt).map((c) => c + inc) as Color;
+    let even = quantize(col, depthInt).map((c) => c + inc) as RGB;
     even = quantize(even, depthInt - 1);
     out[1].push(even);
   }

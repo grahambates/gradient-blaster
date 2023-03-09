@@ -11,7 +11,7 @@ import { interlaceGradient } from "../lib/gradient";
 import Button from "./Button";
 import Code from "./Code";
 import { selectPoints } from "../store/points";
-import { Color } from "../types";
+import { RGB } from "../types";
 import { Target } from "../lib/targets";
 import { quantize } from "../lib/bitDepth";
 import { rgbCssProp } from "../lib/utils";
@@ -29,7 +29,7 @@ function Output() {
   const target = useSelector(selectTarget);
 
   // Delay update to output for performance i.e. dont generate 1000s of times while dragging
-  const [debouncedGradient, setDebouncedGradient] = useState<Color[]>(gradient);
+  const [debouncedGradient, setDebouncedGradient] = useState<RGB[]>(gradient);
   const [debouncedQuery, setDebouncedQuery] = useState(
     encodeUrlQuery({ points, options })
   );
@@ -111,7 +111,7 @@ function Output() {
 }
 
 interface TableProps {
-  gradient: Color[];
+  gradient: RGB[];
   query: string;
   target: Target;
   lang: string;
@@ -119,7 +119,7 @@ interface TableProps {
 
 const Table = React.memo(({ gradient, query, target, lang }: TableProps) => {
   let commentPrefix: string;
-  let fn: (gradient: Color[], opts: output.TableOptions) => string;
+  let fn: (gradient: RGB[], opts: output.TableOptions) => string;
   let ext: string;
   switch (lang) {
     case "c":
@@ -231,7 +231,7 @@ const Table = React.memo(({ gradient, query, target, lang }: TableProps) => {
 });
 
 interface TableBinProps {
-  gradient: Color[];
+  gradient: RGB[];
   target: Target;
 }
 
@@ -271,7 +271,7 @@ const TableBin = React.memo(({ gradient, target }: TableBinProps) => {
 });
 
 interface CopperListProps {
-  gradient: Color[];
+  gradient: RGB[];
   query: string;
   target: Target;
 }
@@ -404,7 +404,7 @@ const CopperList = React.memo(
 );
 
 interface ImagePngProps {
-  gradient: Color[];
+  gradient: RGB[];
   target: Target;
 }
 

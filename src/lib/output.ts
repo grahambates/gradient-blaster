@@ -10,7 +10,7 @@ import {
 import { reduceBits } from "./bitDepth";
 import { sameColors } from "./utils";
 import { Target } from "./targets";
-import { Color } from "../types";
+import { RGB } from "../types";
 
 export type FormatKey =
   | "copperList"
@@ -45,7 +45,7 @@ export interface CopperListOptions {
 }
 
 export function buildCopperList(
-  gradient: Color[],
+  gradient: RGB[],
   {
     startLine = 0x2b,
     varName,
@@ -77,7 +77,7 @@ export function buildCopperList(
       lastCol = hex;
     } else {
       // AGA
-      if (!sameColors(lastCol as Color, col)) {
+      if (!sameColors(lastCol as RGB, col)) {
         const l = (line & 0xff).toString(16);
         if (line > startLine || waitStart) {
           output.push(`\tdc.w $${l}07,$fffe`);
@@ -109,7 +109,7 @@ export interface TableOptions {
 }
 
 export const formatTableAsm = (
-  values: Color[],
+  values: RGB[],
   { rowSize, varName, target }: TableOptions
 ) => {
   let output = varName ? varName + ":\n" : "";
@@ -121,7 +121,7 @@ export const formatTableAsm = (
   return output;
 };
 
-function tableHexItems(values: Color[], target: Target) {
+function tableHexItems(values: RGB[], target: Target) {
   const items = [];
   for (let col of values) {
     if (target.id === "atariSte") {
@@ -168,7 +168,7 @@ function groupRows<T>(items: T[], rowSize: number): T[][] {
 }
 
 export const formatTableC = (
-  values: Color[],
+  values: RGB[],
   { rowSize = 16, varName, target }: TableOptions
 ) => {
   const items = tableHexItems(values, target);
@@ -180,7 +180,7 @@ export const formatTableC = (
   return output + "\n};";
 };
 
-export const gradientToBytes = (gradient: Color[], target: Target) => {
+export const gradientToBytes = (gradient: RGB[], target: Target) => {
   let bytes;
   let i = 0;
 
