@@ -14,6 +14,7 @@ import { RGB } from "../types";
 
 export type FormatKey =
   | "copperList"
+  | "copperListC"
   | "tableAsm"
   | "tableC"
   | "tableAmos"
@@ -27,6 +28,7 @@ export interface Format {
 
 export const formats: Record<FormatKey, Format> = {
   copperList: { label: "Copper list" },
+  copperListC: { label: "Copper list: C" },
   tableAsm: { label: "Table: asm" },
   tableC: { label: "Table: C" },
   tableAmos: { label: "Table: AMOS" },
@@ -42,6 +44,7 @@ export interface CopperListOptions {
   waitStart?: boolean;
   endList?: boolean;
   target: Target;
+  lang?: string;
 }
 
 export function buildCopperList(
@@ -53,12 +56,22 @@ export function buildCopperList(
     waitStart = true,
     endList = true,
     target,
+    lang,
   }: CopperListOptions
 ): string {
-  const colorReg = "$" + (0x180 + colorIndex * 2).toString(16);
+  const numberPrefix = lang === "c" ? "0x" : "$";
+  const linePrefix = lang === "c" ? "" : "dc.w ";
+  const comment = lang === "c" ? "//" : ";";
+
+
+  let colorReg = numberPrefix + (0x180 + colorIndex * 2).toString(16);
   let output = [];
   if (varName) {
-    output.push(varName + ":");
+    if (lang === "c") {
+        output.push(`unsigned short ${varName}[] = {`);
+    }else{
+      output.push(varName + ":");
+    }
   }
 
   let lastCol;
@@ -70,9 +83,9 @@ export function buildCopperList(
       if (lastCol !== hex) {
         const l = (line & 0xff).toString(16);
         if (line > startLine || waitStart) {
-          output.push(`\tdc.w $${l}07,$fffe`);
+          output.push(`\t${linePrefix}${numberPrefix}${l}07,${numberPrefix}fffe`);
         }
-        output.push(`\tdc.w ${colorReg},$${hex}`);
+        output.push(`\t${linePrefix}${colorReg},${numberPrefix}${hex}`);
       }
       lastCol = hex;
     } else {
@@ -92,12 +105,15 @@ export function buildCopperList(
     }
     // PAL fix
     if (line === 0xff) {
-      output.push(`\tdc.w $ffdf,$fffe ; PAL fix`);
+      output.push(`\t${linePrefix}${numberPrefix}ffdf,${numberPrefix}fffe ${comment} PAL fix`);
     }
     line++;
   }
   if (endList) {
-    output.push(`\tdc.w $ffff,$fffe ; End copper list`);
+    output.push(`\t${linePrefix}${numberPrefix}ffff,${numberPrefix}fffe ${comment} End copper list`);
+  }
+  if (lang === "c") {
+    output.push("};");
   }
   return output.join("\n");
 }

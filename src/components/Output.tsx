@@ -74,7 +74,16 @@ function Output() {
           gradient={debouncedGradient}
           query={debouncedQuery}
           target={target}
+          lang="asm"
         />
+      )}
+      {outputFormat === "copperListC" && (
+          <CopperList
+              gradient={debouncedGradient}
+              query={debouncedQuery}
+              target={target}
+              lang="c"
+          />
       )}
       {outputFormat === "tableAsm" && (
         <Table
@@ -274,10 +283,11 @@ interface CopperListProps {
   gradient: RGB[];
   query: string;
   target: Target;
+  lang: string;
 }
 
 const CopperList = React.memo(
-  ({ gradient, query, target }: CopperListProps) => {
+  ({ gradient, query, target, lang }: CopperListProps) => {
     const [startLine, setStartLine] = useState(0x2b);
     const [colorIndex, setColorIndex] = useState(0);
     const [varName, setVarName] = useState("Gradient");
@@ -296,6 +306,7 @@ const CopperList = React.memo(
         waitStart,
         endList,
         target,
+        lang,
       });
       code += "\n";
       code += output.buildCopperList(even, {
@@ -305,6 +316,7 @@ const CopperList = React.memo(
         waitStart,
         endList,
         target,
+        lang,
       });
     } else {
       code += output.buildCopperList(gradient, {
@@ -314,6 +326,7 @@ const CopperList = React.memo(
         waitStart,
         endList,
         target,
+        lang,
       });
     }
 
