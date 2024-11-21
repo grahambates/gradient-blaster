@@ -24,14 +24,14 @@ export function encodeHexSte(rgb: RGB): string {
 
 export function encodeHexFalcon(rgb: RGB): string {
   const [r, g, b] = normalizeRgb(rgb).map((v) =>
-    (v << 2).toString(16).padStart(2, "0")
+    (v << 2).toString(16).padStart(2, "0"),
   );
   return r + g + "00" + b;
 }
 
 export function encodeHexFalcon24(rgb: RGB): string {
   const [r, g, b] = normalizeRgb(rgb).map((v) =>
-    v.toString(16).padStart(2, "0")
+    v.toString(16).padStart(2, "0"),
   );
   return r + g + "00" + b;
 }
@@ -64,6 +64,6 @@ export function decodeHex3(hex: string): RGB {
 
 export function decodeHex6(hex: string): RGB {
   return [hex.substring(0, 2), hex.substring(2, 4), hex.substring(4, 6)].map(
-    (v) => parseInt(v, 16)
+    (v) => parseInt(v, 16),
   ) as RGB;
 }

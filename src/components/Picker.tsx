@@ -141,7 +141,7 @@ const PickerSquare = ({ hsv, depth, onChange }: PickerProps) => {
 
         dragMove(e as any);
       },
-      [h, onChange]
+      [h, onChange],
     );
 
   const classes = ["PickerSquare__selection"];
@@ -216,7 +216,7 @@ const HueStrip = ({ hsv, onChange }: HueStripProps) => {
 
         dragMove(e as any);
       },
-      [s, v, onChange]
+      [s, v, onChange],
     );
 
   return (

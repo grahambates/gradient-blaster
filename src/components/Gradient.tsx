@@ -58,7 +58,7 @@ function Gradient() {
       addPoint({
         pos: y / (height - 1),
         color: rgbToHsv(sample),
-      })
+      }),
     );
   };
 

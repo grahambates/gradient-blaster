@@ -57,20 +57,19 @@ export function buildCopperList(
     endList = true,
     target,
     lang,
-  }: CopperListOptions
+  }: CopperListOptions,
 ): string {
   const numberPrefix = lang === "c" ? "0x" : "$";
   const linePrefix = lang === "c" ? "" : "dc.w ";
   const commentPrefix = lang === "c" ? "//" : ";";
   const linePostfix = lang === "c" ? "," : "";
 
-
   let colorReg = numberPrefix + (0x180 + colorIndex * 2).toString(16);
   let output = [];
   if (varName) {
     if (lang === "c") {
-        output.push(`unsigned short ${varName}[] = {`);
-    }else{
+      output.push(`unsigned short ${varName}[] = {`);
+    } else {
       output.push(varName + ":");
     }
   }
@@ -84,9 +83,13 @@ export function buildCopperList(
       if (lastCol !== hex) {
         const l = (line & 0xff).toString(16);
         if (line > startLine || waitStart) {
-          output.push(`\t${linePrefix}${numberPrefix}${l}07,${numberPrefix}fffe${linePostfix}`);
+          output.push(
+            `\t${linePrefix}${numberPrefix}${l}07,${numberPrefix}fffe${linePostfix}`,
+          );
         }
-        output.push(`\t${linePrefix}${colorReg},${numberPrefix}${hex}${linePostfix}`);
+        output.push(
+          `\t${linePrefix}${colorReg},${numberPrefix}${hex}${linePostfix}`,
+        );
       }
       lastCol = hex;
     } else {
@@ -106,12 +109,16 @@ export function buildCopperList(
     }
     // PAL fix
     if (line === 0xff) {
-      output.push(`\t${linePrefix}${numberPrefix}ffdf,${numberPrefix}fffe${linePostfix} ${commentPrefix} PAL fix`);
+      output.push(
+        `\t${linePrefix}${numberPrefix}ffdf,${numberPrefix}fffe${linePostfix} ${commentPrefix} PAL fix`,
+      );
     }
     line++;
   }
   if (endList) {
-    output.push(`\t${linePrefix}${numberPrefix}ffff,${numberPrefix}fffe ${commentPrefix} End copper list`);
+    output.push(
+      `\t${linePrefix}${numberPrefix}ffff,${numberPrefix}fffe ${commentPrefix} End copper list`,
+    );
   }
   if (lang === "c") {
     output.push("};");
@@ -127,7 +134,7 @@ export interface TableOptions {
 
 export const formatTableAsm = (
   values: RGB[],
-  { rowSize, varName, target }: TableOptions
+  { rowSize, varName, target }: TableOptions,
 ) => {
   let output = varName ? varName + ":\n" : "";
   const items = tableHexItems(values, target);
@@ -186,7 +193,7 @@ function groupRows<T>(items: T[], rowSize: number): T[][] {
 
 export const formatTableC = (
   values: RGB[],
-  { rowSize = 16, varName, target }: TableOptions
+  { rowSize = 16, varName, target }: TableOptions,
 ) => {
   const items = tableHexItems(values, target);
   const size = items[0]?.length > 4 ? "long" : "short";
@@ -213,7 +220,7 @@ export const gradientToBytes = (gradient: RGB[], target: Target) => {
   } else if (target.id === "atariSte") {
     bytes = new Uint8Array(gradient.length * 2);
     for (const [r, g, b] of gradient.map((c) =>
-      decodeHex3(encodeHexSte(reduceBits(c, target.depth)))
+      decodeHex3(encodeHexSte(reduceBits(c, target.depth))),
     )) {
       bytes[i++] = r;
       bytes[i++] = (g << 4) + b;
@@ -221,7 +228,7 @@ export const gradientToBytes = (gradient: RGB[], target: Target) => {
   } else if (target.id === "atariFalcon") {
     bytes = new Uint8Array(gradient.length * 4);
     for (const [r, g, b] of gradient.map((c) =>
-      reduceBits(c, target.depth).map((c) => c << 2)
+      reduceBits(c, target.depth).map((c) => c << 2),
     )) {
       bytes[i++] = r;
       bytes[i++] = g;
@@ -240,7 +247,9 @@ export const gradientToBytes = (gradient: RGB[], target: Target) => {
     bytes = new Uint8Array(gradient.length * 2);
     for (const [a, b, c, d] of gradient.map(
       (c) =>
-        decodeHex3(encodeHexFalconTrue(reduceBits(c, target.depth))) as number[]
+        decodeHex3(
+          encodeHexFalconTrue(reduceBits(c, target.depth)),
+        ) as number[],
     )) {
       bytes[i++] = (a << 4) + b;
       bytes[i++] = (c << 4) + d;
@@ -263,5 +272,5 @@ export const gradientToBytes = (gradient: RGB[], target: Target) => {
 
 export const base64Encode = (bytes: Uint8Array) =>
   window.btoa(
-    bytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
+    bytes.reduce((data, byte) => data + String.fromCharCode(byte), ""),
   );

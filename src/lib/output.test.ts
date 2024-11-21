@@ -380,7 +380,7 @@ describe("output", () => {
         target: targets.amigaOcs,
       });
       expect(result).toContain(
-        "\tdc.w $000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000\n"
+        "\tdc.w $000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000,$000\n",
       );
     });
   });
@@ -686,7 +686,7 @@ describe("output", () => {
         target: targets.amigaOcs,
       });
       expect(result).toContain(
-        "\t0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,\n"
+        "\t0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,0x000,\n",
       );
     });
   });
@@ -698,7 +698,7 @@ describe("output", () => {
           [0xa, 0xb, 0xc],
           [0x1, 0x2, 0x3],
         ].map((v) => restoreBits(v as RGB, 4)),
-        targets.amigaOcs
+        targets.amigaOcs,
       );
       expect(result).toEqual(new Uint8Array([0xa, 0xbc, 0x1, 0x23]));
     });
@@ -709,10 +709,10 @@ describe("output", () => {
           [0xa1, 0xb2, 0xc3],
           [0xd4, 0xe5, 0xf6],
         ],
-        targets.amigaAga
+        targets.amigaAga,
       );
       expect(result).toEqual(
-        new Uint8Array([0xa, 0xbc, 0x1, 0x23, 0xd, 0xef, 0x4, 0x56])
+        new Uint8Array([0xa, 0xbc, 0x1, 0x23, 0xd, 0xef, 0x4, 0x56]),
       );
     });
 
@@ -722,7 +722,7 @@ describe("output", () => {
           [0x1, 0x2, 0x3],
           [0x4, 0x5, 0x6],
         ].map((v) => restoreBits(v as RGB, 3)),
-        targets.atariSt
+        targets.atariSt,
       );
       expect(result).toEqual(new Uint8Array([0x1, 0x23, 0x4, 0x56]));
     });
@@ -733,7 +733,7 @@ describe("output", () => {
           [0xa, 0xb, 0xc],
           [0x1, 0x2, 0x3],
         ].map((v) => restoreBits(v as RGB, 4)),
-        targets.atariSte
+        targets.atariSte,
       );
       expect(result).toEqual(new Uint8Array([0x5, 0xd6, 0x8, 0x19]));
     });
@@ -744,7 +744,7 @@ describe("output", () => {
           [0x1f, 0x3f, 0x1f],
           [0x10, 0x08, 0x00],
         ].map((v) => restoreBits(v as RGB, 6)),
-        targets.atariFalcon
+        targets.atariFalcon,
       );
       expect(result).toEqual(new Uint8Array([124, 252, 0, 124, 64, 32, 0, 0]));
     });
@@ -755,7 +755,7 @@ describe("output", () => {
           [0x1f, 0x3f, 0x1f],
           [0x10, 0x08, 0x00],
         ].map((v) => restoreBits(v as RGB, 6)),
-        targets.atariFalconTruecolor
+        targets.atariFalconTruecolor,
       );
       expect(result).toEqual(new Uint8Array([127, 239, 65, 0]));
     });
@@ -764,7 +764,7 @@ describe("output", () => {
   describe("base64Encode", () => {
     it("encodes a byte array", () => {
       let result = output.base64Encode(
-        new Uint8Array(["a", "b", "c", "d"].map((s) => s.charCodeAt(0)))
+        new Uint8Array(["a", "b", "c", "d"].map((s) => s.charCodeAt(0))),
       );
       expect(result).toBe("YWJjZA==");
     });

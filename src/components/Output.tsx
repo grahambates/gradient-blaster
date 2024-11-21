@@ -31,7 +31,7 @@ function Output() {
   // Delay update to output for performance i.e. dont generate 1000s of times while dragging
   const [debouncedGradient, setDebouncedGradient] = useState<RGB[]>(gradient);
   const [debouncedQuery, setDebouncedQuery] = useState(
-    encodeUrlQuery({ points, options })
+    encodeUrlQuery({ points, options }),
   );
   const timeout = useRef<NodeJS.Timeout>();
 
@@ -78,12 +78,12 @@ function Output() {
         />
       )}
       {outputFormat === "copperListC" && (
-          <CopperList
-              gradient={debouncedGradient}
-              query={debouncedQuery}
-              target={target}
-              lang="c"
-          />
+        <CopperList
+          gradient={debouncedGradient}
+          query={debouncedQuery}
+          target={target}
+          lang="c"
+        />
       )}
       {outputFormat === "tableAsm" && (
         <Table
@@ -414,7 +414,7 @@ const CopperList = React.memo(
         </div>
       </>
     );
-  }
+  },
 );
 
 interface ImagePngProps {
@@ -467,7 +467,9 @@ function ImagePng({ gradient, target }: ImagePngProps) {
           </select>
         </span>
         <span>
-          <label htmlFor="Output-repeat">{orientation === "v" ? "Width: " : "Height: " }</label>
+          <label htmlFor="Output-repeat">
+            {orientation === "v" ? "Width: " : "Height: "}
+          </label>
           <input
             id="Output-repeat"
             type="number"

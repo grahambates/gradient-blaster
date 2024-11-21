@@ -58,7 +58,7 @@ function Detail() {
 
   const handleChangeColor = useCallback(
     (color: HSV) => dispatch(setColor(color)),
-    [dispatch]
+    [dispatch],
   );
 
   let hexPattern;

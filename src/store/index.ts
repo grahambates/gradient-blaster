@@ -42,7 +42,7 @@ const data = undoable(
       "points/previousPoint",
       "options/setScale",
     ]),
-  }
+  },
 );
 
 const store = configureStore({ reducer: { data } });
@@ -57,7 +57,7 @@ export const selectGradient = createSelector(
   selectOptions,
   (points, options) => {
     return buildGradient(points, options);
-  }
+  },
 );
 
 export const selectPresentData = (state: RootState) => state.data.present;

@@ -16,7 +16,7 @@ const Code = ({ code }: CodeProps) => {
       .replace(/(dc.(w|l)|Data)/gi, "<span class='Code__directive'>$1</span>")
       .replace(
         /(unsigned|short|long)/gi,
-        "<span class='Code__keyword'>$1</span>"
+        "<span class='Code__keyword'>$1</span>",
       );
 
     preRef.current!.innerHTML = processed;

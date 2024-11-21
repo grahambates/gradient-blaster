@@ -109,7 +109,7 @@ function perceptualMix(color1: RGB, color2: RGB, pos: number): RGB {
 
 function dither(
   values: RGB[],
-  { ditherMode, ditherAmount = 0, shuffleCount = 1, target }: Options
+  { ditherMode, ditherAmount = 0, shuffleCount = 1, target }: Options,
 ) {
   if (ditherMode === "off") {
     return values;
@@ -248,10 +248,7 @@ const blueNoise = [
 
 type GradientPair = [RGB[], RGB[]];
 
-export function interlaceGradient(
-  gradient: RGB[],
-  depth: Bits
-): GradientPair {
+export function interlaceGradient(gradient: RGB[], depth: Bits): GradientPair {
   const out: GradientPair = [[], []];
   const depthInt = Array.isArray(depth) ? depth[0] : depth;
 
