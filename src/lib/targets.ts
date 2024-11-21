@@ -41,6 +41,7 @@ const targets: Record<TargetKey, Target> = {
     interlaced: true,
     outputs: [
       "copperList",
+      "copperListC",
       "tableAsm",
       "tableC",
       "tableAmos",
@@ -54,6 +55,7 @@ const targets: Record<TargetKey, Target> = {
     depth: 8,
     outputs: [
       "copperList",
+      "copperListC",
       "tableAsm",
       "tableC",
       "tableAmos",

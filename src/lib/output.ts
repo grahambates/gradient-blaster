@@ -27,7 +27,7 @@ export interface Format {
 }
 
 export const formats: Record<FormatKey, Format> = {
-  copperList: { label: "Copper list" },
+  copperList: { label: "Copper list: asm" },
   copperListC: { label: "Copper list: C" },
   tableAsm: { label: "Table: asm" },
   tableC: { label: "Table: C" },
@@ -44,7 +44,7 @@ export interface CopperListOptions {
   waitStart?: boolean;
   endList?: boolean;
   target: Target;
-  lang?: string;
+  lang: "c" | "asm";
 }
 
 export function buildCopperList(
@@ -59,15 +59,17 @@ export function buildCopperList(
     lang,
   }: CopperListOptions,
 ): string {
-  const numberPrefix = lang === "c" ? "0x" : "$";
-  const linePrefix = lang === "c" ? "" : "dc.w ";
-  const commentPrefix = lang === "c" ? "//" : ";";
-  const linePostfix = lang === "c" ? "," : "";
+  const isC = lang === "c";
+
+  const numberPrefix = isC ? "0x" : "$";
+  const linePrefix = isC ? "" : "dc.w ";
+  const commentPrefix = isC ? "//" : ";";
+  const linePostfix = isC ? "," : "";
 
   let colorReg = numberPrefix + (0x180 + colorIndex * 2).toString(16);
   let output = [];
   if (varName) {
-    if (lang === "c") {
+    if (isC) {
       output.push(`unsigned short ${varName}[] = {`);
     } else {
       output.push(varName + ":");
@@ -97,13 +99,23 @@ export function buildCopperList(
       if (!sameColors(lastCol as RGB, col)) {
         const l = (line & 0xff).toString(16);
         if (line > startLine || waitStart) {
-          output.push(`\tdc.w $${l}07,$fffe`);
+          output.push(
+            `\t${linePrefix}${numberPrefix}${l}07,${numberPrefix}fffe${linePostfix}`,
+          );
         }
         const [hex1, hex2] = encodeHexPairAga(col);
-        output.push(`\tdc.w ${colorReg},$${hex1}`);
-        output.push(`\tdc.w $106,$200`);
-        output.push(`\tdc.w ${colorReg},$${hex2}`);
-        output.push(`\tdc.w $106,$000`);
+        output.push(
+          `\t${linePrefix}${colorReg},${numberPrefix}${hex1}${linePostfix}`,
+        );
+        output.push(
+          `\t${linePrefix}${numberPrefix}106,${numberPrefix}200${linePostfix}`,
+        );
+        output.push(
+          `\t${linePrefix}${colorReg},${numberPrefix}${hex2}${linePostfix}`,
+        );
+        output.push(
+          `\t${linePrefix}${numberPrefix}106,${numberPrefix}000${linePostfix}`,
+        );
       }
       lastCol = col;
     }
@@ -120,7 +132,7 @@ export function buildCopperList(
       `\t${linePrefix}${numberPrefix}ffff,${numberPrefix}fffe ${commentPrefix} End copper list`,
     );
   }
-  if (lang === "c") {
+  if (isC) {
     output.push("};");
   }
   return output.join("\n");

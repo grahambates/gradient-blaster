@@ -283,7 +283,7 @@ interface CopperListProps {
   gradient: RGB[];
   query: string;
   target: Target;
-  lang: string;
+  lang: "c" | "asm";
 }
 
 const CopperList = React.memo(

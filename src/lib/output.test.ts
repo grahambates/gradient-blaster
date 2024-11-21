@@ -11,6 +11,7 @@ describe("output", () => {
       let result = output.buildCopperList(values, {
         varName: "Gradient",
         target: targets.amigaOcs,
+        lang: "asm",
       });
       expect(result).toBe(`Gradient:
 	dc.w $2b07,$fffe
@@ -53,6 +54,7 @@ describe("output", () => {
       let result = output.buildCopperList(values, {
         varName: "Gradient",
         target: targets.amigaAga,
+        lang: "asm",
       });
       // Output too long to include in full
       expect(result).toContain(`Gradient:
@@ -80,6 +82,7 @@ describe("output", () => {
         varName: "Gradient",
         target: targets.amigaOcs,
         colorIndex: 1,
+        lang: "asm",
       });
       expect(result).toContain(`dc.w $182,$000`);
     });
