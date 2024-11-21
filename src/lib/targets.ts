@@ -26,6 +26,7 @@ const targets: Record<TargetKey, Target> = {
     depth: 4,
     outputs: [
       "copperList",
+      "copperListC",
       "tableAsm",
       "tableC",
       "tableAmos",
