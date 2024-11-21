@@ -296,7 +296,8 @@ const CopperList = React.memo(
     const [waitStart, setWaitStart] = useState(true);
     const [endList, setEndList] = useState(true);
 
-    let code = "; " + baseUrl + query + "\n";
+    const commentPrefix = lang === "c" ? "// " : "; ";
+    let code = commentPrefix + baseUrl + query + "\n";
     if (target.interlaced) {
       const [odd, even] = interlaceGradient(gradient, target.depth);
       code += output.buildCopperList(odd, {

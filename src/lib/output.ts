@@ -61,7 +61,8 @@ export function buildCopperList(
 ): string {
   const numberPrefix = lang === "c" ? "0x" : "$";
   const linePrefix = lang === "c" ? "" : "dc.w ";
-  const comment = lang === "c" ? "//" : ";";
+  const commentPrefix = lang === "c" ? "//" : ";";
+  const linePostfix = lang === "c" ? "," : "";
 
 
   let colorReg = numberPrefix + (0x180 + colorIndex * 2).toString(16);
@@ -83,9 +84,9 @@ export function buildCopperList(
       if (lastCol !== hex) {
         const l = (line & 0xff).toString(16);
         if (line > startLine || waitStart) {
-          output.push(`\t${linePrefix}${numberPrefix}${l}07,${numberPrefix}fffe`);
+          output.push(`\t${linePrefix}${numberPrefix}${l}07,${numberPrefix}fffe${linePostfix}`);
         }
-        output.push(`\t${linePrefix}${colorReg},${numberPrefix}${hex}`);
+        output.push(`\t${linePrefix}${colorReg},${numberPrefix}${hex}${linePostfix}`);
       }
       lastCol = hex;
     } else {
@@ -105,12 +106,12 @@ export function buildCopperList(
     }
     // PAL fix
     if (line === 0xff) {
-      output.push(`\t${linePrefix}${numberPrefix}ffdf,${numberPrefix}fffe ${comment} PAL fix`);
+      output.push(`\t${linePrefix}${numberPrefix}ffdf,${numberPrefix}fffe${linePostfix} ${commentPrefix} PAL fix`);
     }
     line++;
   }
   if (endList) {
-    output.push(`\t${linePrefix}${numberPrefix}ffff,${numberPrefix}fffe ${comment} End copper list`);
+    output.push(`\t${linePrefix}${numberPrefix}ffff,${numberPrefix}fffe ${commentPrefix} End copper list`);
   }
   if (lang === "c") {
     output.push("};");
