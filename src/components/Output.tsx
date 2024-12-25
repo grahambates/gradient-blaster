@@ -15,6 +15,7 @@ import { RGB } from "../types";
 import { Target } from "../lib/targets";
 import { quantize } from "../lib/bitDepth";
 import { rgbCssProp } from "../lib/utils";
+import { encodeHex6 } from "../lib/hex";
 
 const DEBOUNCE_DELAY = 100;
 
@@ -109,6 +110,7 @@ function Output() {
           lang="amos"
         />
       )}
+      {outputFormat === "hexList" && <HexList gradient={debouncedGradient} />}
       {outputFormat === "tableBin" && (
         <TableBin gradient={debouncedGradient} target={target} />
       )}
@@ -118,6 +120,23 @@ function Output() {
     </div>
   );
 }
+
+interface HexListProps {
+  gradient: RGB[];
+}
+
+const HexList = ({ gradient }: HexListProps) => {
+  const code = gradient.map((v) => encodeHex6(v)).join(", ");
+  return (
+    <>
+      <div className="Output__actions">
+        <CopyLink code={code} />
+        <DownloadLink data={code} filename={"gradient.txt"} />
+      </div>
+      <div className="Output__hex">{code}</div>
+    </>
+  );
+};
 
 interface TableProps {
   gradient: RGB[];

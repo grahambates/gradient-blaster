@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { quantize } from "../lib/bitDepth";
 import { hsvToRgb, luminance } from "../lib/colorSpace";
+import { adjustColor } from "../lib/gradient";
+import { TargetKey } from "../lib/targets";
 import { rgbCssProp } from "../lib/utils";
-import { Bits, HSV } from "../types";
+import { HSV } from "../types";
 import "./Point.css";
 
 const REMOVE_THRESHOLD = 30;
@@ -16,7 +17,7 @@ export interface PointProps {
   onSelect: () => void;
   onRemove: () => void;
   initialDrag?: boolean;
-  depth: Bits;
+  target: TargetKey;
 }
 
 function Point({
@@ -28,9 +29,9 @@ function Point({
   onSelect,
   onRemove,
   initialDrag,
-  depth,
+  target,
 }: PointProps) {
-  const rgb = quantize(hsvToRgb(color), depth);
+  const rgb = adjustColor(hsvToRgb(color), target);
 
   const [isDragging, setIsDragging] = useState(initialDrag);
   const [isRemoving, setIsRemoving] = useState(false);

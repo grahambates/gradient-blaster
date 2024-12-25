@@ -17,13 +17,16 @@ import { clamp, rgbCssProp } from "../lib/utils";
 import Picker from "./Picker";
 import Button from "./Button";
 import { decodeHex3, decodeHex6, encodeHex3, encodeHex6 } from "../lib/hex";
-import { quantize, reduceBits, restoreBits } from "../lib/bitDepth";
+import { reduceBits, restoreBits } from "../lib/bitDepth";
 import { hsvToRgb, luminance, rgbToHsv } from "../lib/colorSpace";
 import { HSV } from "../types";
+import PalettePicker from "./PalettePicker";
+import targets from "../lib/targets";
+import { adjustColor } from "../lib/gradient";
 
 function Detail() {
   const dispatch = useDispatch();
-  const { steps } = useSelector(selectOptions);
+  const { steps, target } = useSelector(selectOptions);
   const depth = useSelector(selectDepth);
   const points = useSelector(selectPoints);
   const selectedIndex = useSelector(selectSelectedIndex);
@@ -48,7 +51,7 @@ function Detail() {
   }, [selectedPoint.color, depth]);
 
   const rgb = hsvToRgb(selectedPoint.color);
-  const color = rgbCssProp(quantize(rgb, depth));
+  const color = rgbCssProp(adjustColor(rgb, target));
   const light = luminance(rgb) > 128;
 
   const classes = ["Detail__header"];
@@ -69,6 +72,9 @@ function Detail() {
   } else {
     hexPattern = "[0-9a-f]{6}";
   }
+
+  const palette = targets[target].palette;
+  const rowSize = targets[target].paletteRowSize;
 
   return (
     <section className="Detail">
@@ -103,31 +109,33 @@ function Detail() {
       </header>
       <div className="Detail__body">
         <div className="Detail__info">
-          <div className="Detail__color">
-            <label htmlFor="Detail-hex">Color: $</label>
-            <input
-              id="Detail-hex"
-              type="text"
-              className="Detail__hexInput"
-              value={hex}
-              maxLength={depth <= 4 ? 3 : 6}
-              pattern={hexPattern}
-              onChange={(e) => {
-                const newHex = e.target.value;
-                setHex(newHex);
-                if (!newHex || e.target.validity.patternMismatch) {
-                  return;
-                }
-                if (depth <= 4) {
-                  const newRgb = decodeHex3(newHex);
-                  dispatch(setColor(rgbToHsv(restoreBits(newRgb, depth))));
-                } else {
-                  const newRgb = decodeHex6(newHex);
-                  dispatch(setColor(rgbToHsv(newRgb)));
-                }
-              }}
-            />
-          </div>
+          {!palette && (
+            <div className="Detail__color">
+              <label htmlFor="Detail-hex">Color: $</label>
+              <input
+                id="Detail-hex"
+                type="text"
+                className="Detail__hexInput"
+                value={hex}
+                maxLength={depth <= 4 ? 3 : 6}
+                pattern={hexPattern}
+                onChange={(e) => {
+                  const newHex = e.target.value;
+                  setHex(newHex);
+                  if (!newHex || e.target.validity.patternMismatch) {
+                    return;
+                  }
+                  if (depth <= 4) {
+                    const newRgb = decodeHex3(newHex);
+                    dispatch(setColor(rgbToHsv(restoreBits(newRgb, depth))));
+                  } else {
+                    const newRgb = decodeHex6(newHex);
+                    dispatch(setColor(rgbToHsv(newRgb)));
+                  }
+                }}
+              />
+            </div>
+          )}
           <div className="Detail__position">
             <label htmlFor="position">Position: </label>
             <input
@@ -140,11 +148,20 @@ function Detail() {
             />
           </div>
         </div>
-        <Picker
-          hsv={selectedPoint.color}
-          depth={depth}
-          onChange={handleChangeColor}
-        />
+        {palette ? (
+          <PalettePicker
+            hsv={selectedPoint.color}
+            palette={palette}
+            rowSize={rowSize}
+            onChange={handleChangeColor}
+          />
+        ) : (
+          <Picker
+            hsv={selectedPoint.color}
+            depth={depth}
+            onChange={handleChangeColor}
+          />
+        )}
       </div>
     </section>
   );

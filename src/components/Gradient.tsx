@@ -13,19 +13,19 @@ import {
 } from "../store/points";
 import { selectOptions, selectTarget } from "../store/options";
 import { selectGradient } from "../store";
-import { interlaceGradient } from "../lib/gradient";
+import { adjustColor, interlaceGradient } from "../lib/gradient";
 import { rgbToHsv } from "../lib/colorSpace";
-import { quantize } from "../lib/bitDepth";
 import { clamp, rgbCssProp } from "../lib/utils";
-import { Bits, RGB } from "../types";
+import { RGB } from "../types";
+import targets, { TargetKey } from "../lib/targets";
 
 function Gradient() {
   const dispatch = useDispatch();
-  const { steps } = useSelector(selectOptions);
+  const { steps, target } = useSelector(selectOptions);
   const points = useSelector(selectPoints);
   const selected = useSelector(selectSelectedIndex);
   const gradient = useSelector(selectGradient);
-  const { depth, interlaced } = useSelector(selectTarget);
+  const { interlaced } = useSelector(selectTarget);
 
   const [scale, setScale] = useState(1);
   const [autoScale, setAutoScale] = useState(true);
@@ -85,7 +85,7 @@ function Gradient() {
               {...p}
               initialDrag={i === selected && isDragging}
               y={p.pos * height}
-              depth={depth}
+              target={target}
               selected={i === selected}
               onMove={handleMove}
               onClone={() => dispatch(clonePoint())}
@@ -95,9 +95,9 @@ function Gradient() {
           ))}
         </div>
         {interlaced && previewLace ? (
-          <CanvasLaced gradient={gradient} scale={scale} depth={depth} />
+          <CanvasLaced gradient={gradient} scale={scale} target={target} />
         ) : (
-          <Canvas gradient={gradient} scale={scale} depth={depth} />
+          <Canvas gradient={gradient} scale={scale} target={target} />
         )}
       </div>
 
@@ -143,10 +143,10 @@ function Gradient() {
 interface CanvasProps {
   gradient: RGB[];
   scale: number;
-  depth: Bits;
+  target: TargetKey;
 }
 
-function Canvas({ gradient, scale, depth }: CanvasProps) {
+function Canvas({ gradient, scale, target }: CanvasProps) {
   const width = 512;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const steps = gradient.length;
@@ -156,12 +156,12 @@ function Canvas({ gradient, scale, depth }: CanvasProps) {
     if (ctx) {
       for (let i = 0; i < steps; i++) {
         let col = gradient[i];
-        col = quantize(col, depth);
+        col = adjustColor(col, target);
         ctx.fillStyle = rgbCssProp(col);
         ctx.fillRect(0, i * scale, width, scale);
       }
     }
-  }, [steps, scale, depth, gradient]);
+  }, [steps, scale, target, gradient]);
 
   return (
     <canvas
@@ -173,11 +173,12 @@ function Canvas({ gradient, scale, depth }: CanvasProps) {
   );
 }
 
-function CanvasLaced({ gradient, scale, depth }: CanvasProps) {
+function CanvasLaced({ gradient, scale, target }: CanvasProps) {
   const width = 512;
   const canvasRefA = useRef<HTMLCanvasElement>(null);
   const canvasRefB = useRef<HTMLCanvasElement>(null);
   const steps = gradient.length;
+  const depth = targets[target].depth;
 
   useEffect(() => {
     const canvasA = canvasRefA.current;
