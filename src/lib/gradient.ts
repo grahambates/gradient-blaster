@@ -9,17 +9,35 @@ import {
   rgbToOklab,
   srgbToLinear,
 } from "./colorSpace";
-import targets from "./targets";
+import targets, { TargetKey } from "./targets";
 import { normalizeRgb, sameColors } from "./utils";
 
 const GOLDEN_RATIO = 1.61803399;
 
+export function adjustColor(color: RGB, target: TargetKey) {
+  const targetOptions = targets[target];
+  const depth = targetOptions.depth ?? 8;
+  const palette = targetOptions.palette;
+  return palette ? closestColor(color, palette) : quantize(color, depth);
+}
+
+function closestColor(color: RGB, palette: RGB[]): RGB {
+  const distances = palette.map((c) => colorDistance(c, color));
+  const index = distances.indexOf(Math.min(...distances));
+  return [...palette[index]];
+}
+
+function colorDistance(color1: RGB, color2: RGB) {
+  const [r1, g1, b1] = rgbToOklab(color1);
+  const [r2, g2, b2] = rgbToOklab(color2);
+  return (r1 - r2) * (r1 - r2) + (g1 - g2) * (g1 - g2) + (b1 - b2) * (b1 - b2);
+}
+
 export function buildGradient(points: Point[], options: Options): RGB[] {
   const { steps, blendMode, ditherMode, target } = options;
-  const depth = targets[target].depth;
   const mappedPoints = [...points].map((p) => {
     let color = hsvToRgb(p.color);
-    color = quantize(color, depth);
+    color = adjustColor(color, target);
     const y = Math.round(p.pos * (steps - 1));
     return { y, color };
   });
@@ -115,7 +133,8 @@ function dither(
     return values;
   }
 
-  const depth = targets[target].depth;
+  const targetOptions = targets[target];
+  const depth = targetOptions.depth;
 
   let amount = ditherAmount / 100;
 
@@ -123,7 +142,9 @@ function dither(
     const labValues = values.map(rgbToLab);
     for (let i = 0; i < labValues.length; i++) {
       const col = labValues[i];
-      const quantised = rgbToLab(quantize(labToRgb(col), depth));
+      const rgb = labToRgb(col);
+      const quantisedRgb = adjustColor(rgb, target);
+      const quantised = rgbToLab(quantisedRgb);
       const errL = col[0] - quantised[0];
       const errA = col[1] - quantised[1];
       const errB = col[2] - quantised[2];

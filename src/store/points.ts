@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from ".";
 import * as conv from "../lib/colorSpace";
 import { decodeUrlQuery } from "../lib/url";
-import { Point } from "../types";
+import { HSV, Point } from "../types";
 import { reset } from "./actions";
 
 const urlState = decodeUrlQuery(window.location.search);
@@ -68,6 +68,11 @@ export const pointsSlice = createSlice({
     nextPoint: (state) => {
       state.selectedIndex += 1;
     },
+    updateColors: (state, action) => {
+      action.payload.forEach((color: HSV, i: number) => {
+        state.items[i].color = color;
+      });
+    },
   },
   extraReducers: {
     [reset as any]() {
@@ -88,6 +93,7 @@ export const {
   selectIndex,
   previousPoint,
   nextPoint,
+  updateColors,
 } = pointsSlice.actions;
 
 export const selectPoints = (state: RootState): Point[] =>

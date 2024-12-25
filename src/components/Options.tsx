@@ -12,10 +12,14 @@ import {
   selectOptions,
 } from "../store/options";
 import targets, { TargetKey } from "../lib/targets";
+import { selectPoints, updateColors } from "../store/points";
+import { adjustColor } from "../lib/gradient";
+import { hsvToRgb, rgbToHsv } from "../lib/colorSpace";
 
 function Options() {
   const dispatch = useDispatch();
   const options = useSelector(selectOptions);
+  const points = useSelector(selectPoints);
   const { steps, blendMode, ditherMode, ditherAmount, shuffleCount, target } =
     options;
 
@@ -52,7 +56,16 @@ function Options() {
         <select
           id="target"
           value={target}
-          onChange={(e) => dispatch(setTarget(e.target.value))}
+          onChange={(e) => {
+            dispatch(setTarget(e.target.value));
+            const colors = points
+              .map((p) =>
+                adjustColor(hsvToRgb(p.color), e.target.value as TargetKey),
+              )
+              .map(rgbToHsv);
+            console.log(colors);
+            dispatch(updateColors(colors));
+          }}
         >
           {Object.keys(targets).map((key) => (
             <option key={key} value={key}>
