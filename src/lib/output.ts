@@ -6,6 +6,7 @@ import {
   encodeHexFalconTrue,
   decodeHex3,
   encodeHexFalcon24,
+  encodeNeoGeo,
 } from "./hex";
 import { reduceBits } from "./bitDepth";
 import { sameColors } from "./utils";
@@ -158,6 +159,7 @@ export const formatTableAsm = (
 };
 
 function tableHexItems(values: RGB[], target: Target) {
+  console.log(target);
   const items = [];
   for (let col of values) {
     if (target.id === "atariSte") {
@@ -177,6 +179,8 @@ function tableHexItems(values: RGB[], target: Target) {
     } else if (target.id === "amigaOcsLace") {
       const color = reduceBits(col, 4);
       items.push(encodeHex3(color));
+    } else if (target.id === "neoGeo") {
+      items.push(encodeNeoGeo(col));
     } else {
       const color = reduceBits(col, target.depth);
       items.push(encodeHex3(color));
@@ -271,6 +275,13 @@ export const gradientToBytes = (gradient: RGB[], target: Target) => {
     for (const [r, g, b] of gradient.map((c) => reduceBits(c, 4))) {
       bytes[i++] = r;
       bytes[i++] = (g << 4) + b;
+    }
+  } else if (target.id === "neoGeo") {
+    bytes = new Uint8Array(gradient.length * 2);
+    for (const col of gradient) {
+      const hex = encodeNeoGeo(col);
+      bytes[i++] = Number(hex.substring(0, 2));
+      bytes[i++] = Number(hex.substring(2));
     }
   } else {
     bytes = new Uint8Array(gradient.length * 2);

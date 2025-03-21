@@ -17,7 +17,8 @@ export type TargetKey =
   | "atariSte"
   | "atariFalcon"
   | "atariFalcon24"
-  | "atariFalconTruecolor";
+  | "atariFalconTruecolor"
+  | "neoGeo";
 
 const targets: Record<TargetKey, Target> = {
   amigaOcs: {
@@ -92,6 +93,12 @@ const targets: Record<TargetKey, Target> = {
     label: "Atari Falcon Truecolor",
     depth: [5, 6, 5],
     outputs: ["tableAsm", "tableC", "tableStos", "tableBin", "imagePng"],
+  },
+  neoGeo: {
+    id: "neoGeo",
+    label: "NeoGeo",
+    depth: [6, 6, 6],
+    outputs: ["tableAsm", "tableC", "tableBin", "imagePng"],
   },
 };
 

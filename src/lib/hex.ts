@@ -41,6 +41,22 @@ export function encodeHexFalconTrue([r, g, b]: RGB): string {
   return word.toString(16).padStart(4, "0");
 }
 
+export function encodeNeoGeo([r, g, b]: RGB): string {
+  const luma = Math.floor(54.213 * r + 182.376 * g + 18.411 * b) & 1;
+  r = Math.floor(r / 8);
+  g = Math.floor(g / 8);
+  b = Math.floor(b / 8);
+  const word =
+    ((luma ^ 1) << 15) |
+    ((r & 1) << 14) |
+    ((g & 1) << 13) |
+    ((b & 1) << 12) |
+    ((r & 0x1e) << 7) |
+    ((g & 0x1e) << 3) |
+    (b >> 1);
+  return word.toString(16).padStart(4, "0");
+}
+
 /**
  * Pair of hex values for Amiga AGA registers
  * Separate word for upper and lower nibbles
