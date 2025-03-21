@@ -97,7 +97,7 @@
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.0.1",
-    "canvas": "^2.9.3",
+    "canvas": "^2.11.2",
     "esbuild-jest": "^0.5.0",
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^8.10.0",
