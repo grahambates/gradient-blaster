@@ -27,7 +27,8 @@ export type TargetKey =
   | "spectrum"
   | "nes"
   | "msx"
-  | "cga";
+  | "cga"
+  | "ql";
 
 const targets: Record<TargetKey, Target> = {
   amigaOcs: {
@@ -342,6 +343,23 @@ const targets: Record<TargetKey, Target> = {
       "ff5555",
       "ff55ff",
       "ffff55",
+      "ffffff",
+    ].map(decodeHex6),
+    paletteRowSize: 8,
+  },
+  ql: {
+    id: "ql",
+    label: "Sinclair QL",
+    depth: 4,
+    outputs: ["hexList", "imagePng"],
+    palette: [
+      "000000",
+      "0000ff",
+      "00ff00",
+      "00ffff",
+      "ff0000",
+      "ff00ff",
+      "ffff00",
       "ffffff",
     ].map(decodeHex6),
     paletteRowSize: 8,
